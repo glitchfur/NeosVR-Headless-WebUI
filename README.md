@@ -4,7 +4,7 @@
 
 _This project is in very early development stages and is not currently a functioning app._ It's also semi-tailored to fit [BLFC](https://goblfc.org/)'s needs, as they are the initial users of this app, but the code may be generalized in the future to allow others to use it as well.
 
-Furthermore, a dependency of this app is `NeosVR-Headless-API`, a Python wrapper to the headless client which is also currently in development and is not yet available as an open-source project.
+This app depends on [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api) for interacting with the headless client.
 
 This project is not officially affiliated with Neos or the Neos development team in any way.
 
