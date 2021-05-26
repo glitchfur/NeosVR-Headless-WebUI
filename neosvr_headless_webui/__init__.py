@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, session, url_for
-from neosvr_headless_webui.auth import login_required
+from .auth import login_required
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
@@ -19,5 +19,8 @@ def create_app():
     from . import auth
     auth.init_oauth(app)
     app.register_blueprint(auth.bp)
+
+    from . import api
+    app.register_blueprint(api.bp)
 
     return app

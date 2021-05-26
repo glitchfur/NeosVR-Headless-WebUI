@@ -22,11 +22,31 @@ def init_oauth(app):
     )
 
 def login_required(view):
+    """
+    Decorator that requires users to be logged in for a view.
+    Redirects users to the login page with an error if they are not.
+    """
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if not "user" in session:
             flash("You must be logged in for that.")
             return redirect(url_for("index"))
+        return view(*args, **kwargs)
+    return wrapped_view
+
+def api_login_required(view):
+    """
+    Decorator that requires users to be logged in to use an API method.
+    Unauthenticated users get a HTTP 401 error and a JSON response.
+    """
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if not "user" in session:
+            response = {
+                "success": False,
+                "message": "You must be logged in for that."
+            }
+            return response, 401
         return view(*args, **kwargs)
     return wrapped_view
 

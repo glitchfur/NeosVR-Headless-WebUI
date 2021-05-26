@@ -10,3 +10,5 @@ AUTHORIZED_USERS = []
 # OAuth client parameters for ConCat
 CONCAT_CLIENT_ID = ""
 CONCAT_CLIENT_SECRET = ""
+# Host and port of the manager server. Defaults are provided.
+MANAGER_HOST, MANAGER_PORT = "127.0.0.1", 16882
