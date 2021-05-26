@@ -12,6 +12,12 @@ This project is not officially affiliated with Neos or the Neos development team
 
 First, make sure you have an `instance` folder created. Next, copy `config_example.py` to `instance/config.py` and edit it as needed.
 
+## Running the headless client manager
+
+The headless client manager is the server that facilitates all communications between the web application and headless clients. Preferably it should be run on the same machine as the web application, and it should be started before the web application. It can be started simply with `./manager_server.py`.
+
+The process stays in the foreground so it is advised to run it inside a `screen` or `tmux` session.
+
 ## Running the development server
 
 The development server should only be used to test code changes and is not designed to be run in production. After installing the dependencies in `requirements.txt`, you can run the app with:
