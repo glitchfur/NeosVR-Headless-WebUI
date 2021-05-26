@@ -23,4 +23,7 @@ def create_app():
     from . import api
     app.register_blueprint(api.bp)
 
+    from . import client
+    app.register_blueprint(client.bp)
+
     return app

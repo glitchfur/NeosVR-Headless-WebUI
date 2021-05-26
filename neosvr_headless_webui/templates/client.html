@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- TODO: Implement these per-session tabs. -->
+
+<!--   <div class="row">
+    <div class="col-lg-12">
+      <div class="btn-group btn-group-toggle mb-3" data-toggle="buttons">
+        <label class="btn btn-dark">
+          <input type="radio" name="options" id="option1"> Server info
+        </label>
+        <label class="btn btn-dark active">
+          <input type="radio" name="options" id="option2" checked> Session 1
+        </label>
+        <label class="btn btn-dark">
+          <input type="radio" name="options" id="option3"> Session 2
+        </label>
+      </div>
+    </div>
+  </div> -->
+
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="info-box bg-primary">
+            <span class="info-box-icon"><i class="fas fa-users"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Users connected</span>
+              <span class="info-box-number">{{ g.status["current_users"] }}/25</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="info-box bg-success">
+            <span class="info-box-icon"><i class="fas fa-users"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Users present</span>
+              <span class="info-box-number">{{ g.status["present_users"] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Session status</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <b>Name:</b> {{ g.status["name"] }}<br />
+              <b>Description:</b> <i>{{ g.status["description"] }}</i><br />
+              <b>Tags:</b> <code>{{ g.status["tags"] }}</code><br />
+              <b>SessionID:</b> <code>{{ g.status["session_id"] }}</code><br />
+              <b>Uptime:</b> {{ g.status["uptime"] }}<br />
+              <b>Access Level:</b> {{ g.status["access_level"] }}<br />
+              <b>Hidden from Listing:</b> {{ g.status["hidden_from_listing"] }}<br />
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+        </div>
+
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title" style="position: relative; top: 5px;">User list</h3>
+          <div class="card-tools">
+            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteModal">Invite</button>
+            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#kickByNameModal">Kick By Name</button>
+            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#banByNameModal">Ban By Name</button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Username</th>
+                <th scope="col">Role</th>
+                <th scope="col">Present</th>
+                <th scope="col">Ping</th>
+                <th scope="col">FPS</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in g.users %}
+              <tr>
+                <td>{{ user.name }}</td>
+                <td>{{ user.role }}</td>
+                <td><span class="badge {% if user.present %}badge-success{% else %}badge-danger{% endif %}">{{ user.present }}</span></td>
+                <td>{{ user.ping }} ms</td>
+                <td>{{ user.fps }}</td>
+                <td>
+                  <button class="btn btn-info btn-xs" data-toggle="modal" data-target="#messageModal" data-username="{{ user.name }}"><b>Message</b></button>
+                  <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#kickModal" data-username="{{ user.name }}"><b>Kick</b></button>
+                  <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#banModal" data-username="{{ user.name }}"><b>Ban</b></button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- /.card-body -->
+      </div>
+      <!-- /.card -->
+
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block modals %}
+
+  <!-- Invite modal -->
+  <div class="modal fade" id="inviteModal" tabindex="-1" role="dialog" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="inviteModalLabel">Invite user</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="inviteModalForm" action="/api/v1/{{ g.client_id }}/invite" method="post">
+          <div class="modal-body">
+            <p>Enter the username of the user you'd like to invite.<br />Note that for this to work:
+              <ul>
+                <li>The headless client must be logged into a Neos account</li>
+                <li>The invitee must be friends with the headless client user</li>
+              </ul>
+            </p>
+            <div class="form-group">
+              <input type="text" class="form-control" id="inviteModalUsername" name="username" placeholder="Username">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Invite</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kick by name modal -->
+  <div class="modal fade" id="kickByNameModal" tabindex="-1" role="dialog" aria-labelledby="kickByNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="kickByNameModalLabel">Kick user by name</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="kickByNameModalForm" action="/api/v1/{{ g.client_id }}/kick" method="post">
+          <div class="modal-body">
+            <p>Enter the username of the user you'd like to kick.<br \>Note that this only applies to users in this session.
+            </p>
+            <div class="form-group">
+              <input type="text" class="form-control" id="kickByNameModalUsername" name="username" placeholder="Username">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Kick</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ban by name modal -->
+  <div class="modal fade" id="banByNameModal" tabindex="-1" role="dialog" aria-labelledby="banByNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="banByNameModalLabel">Ban user by name</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="banByNameModalForm" action="/api/v1/{{ g.client_id }}/ban_by_name" method="post">
+          <div class="modal-body">
+            <p>
+              Enter the username of the user you'd like to ban from this session. This can be any user: They don't have to be present.<br \>
+            </p>
+            <p>The user will <b>not</b> be removed automatically following the ban if they're in the session. They must be kicked manually.</p>
+            <div class="form-group">
+              <input type="text" class="form-control" id="banByNameModalUsername" name="username" placeholder="Username">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Ban</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message modal -->
+  <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="messageModalLabel">Send a message</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="messageModalForm" action="/api/v1/{{ g.client_id }}/message" method="post">
+          <div class="modal-body">
+            <p>
+              Send a message from the headless client's logged in Neos user to another user. Note that for this to work:
+              <ul>
+                <li>The headless client must be logged into a Neos account</li>
+                <li>The recipient must be friends with the headless client user</li>
+              </ul>
+              If either of these are false, the sending will fail.
+            </p>
+            <div class="form-group">
+              <label for="messageModalUsername" class="col-form-label">Username:</label>
+              <input type="text" class="form-control" id="messageModalUsername" name="username" readonly>
+            </div>
+            <div class="form-group">
+              <label for="messageModalText" class="col-form-label">Message:</label>
+              <textarea class="form-control" id="messageModalText" name="message"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kick modal -->
+  <div class="modal fade" id="kickModal" tabindex="-1" role="dialog" aria-labelledby="kickModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="kickModalLabel">Kick user</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="kickModalForm" action="/api/v1/{{ g.client_id }}/kick" method="post">
+          <div class="modal-body">
+            Are you sure you want to kick <b id="kickModalUsernameDisplay"></b>?
+            <input type="hidden" id="kickModalUsername" name="username" value="">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Kick</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ban modal -->
+  <div class="modal fade" id="banModal" tabindex="-1" role="dialog" aria-labelledby="banModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="banModalLabel">Ban user</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="banModalForm" action="/api/v1/{{ g.client_id }}/ban" method="post">
+          <div class="modal-body">
+            Are you sure you want to ban <b id="banModalUsernameDisplay"></b>?<br />
+            They will not be able to rejoin this session unless unbanned.
+            <input type="hidden" id="banModalUsername" name="username" value="">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Ban</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="/static/js/client.js"></script>
+
+{% endblock %}
