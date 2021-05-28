@@ -37,7 +37,7 @@ def list_headless_clients():
 def start():
     """
     Starts a headless client. Data should be submitted as a URL encoded form.
-    Required parameters are `host`, `port`, and `neos_dir`.
+    Required parameters are `name`, `host`, `port`, and `neos_dir`.
     """
     name = request.form["name"]
     host, port = request.form["host"], request.form["port"]
