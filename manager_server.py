@@ -8,6 +8,8 @@
 # It should be started before the web application is started.
 
 import logging
+from threading import Thread
+from time import sleep
 
 from rpyc import Service
 from neosvr_headless_api import RemoteHeadlessClient
@@ -17,25 +19,86 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+class HeadlessClientInstance(RemoteHeadlessClient):
+    """
+    This is a small wrapper around the `HeadlessClient` class, but an important
+    one. It makes command I/O more performant in the context of a multi-user
+    application such as this one.
+
+    Under no load, the headless client typically processes commands immediately.
+    However, under heavy load, commands can sometimes experience substantial
+    delays. Some "read-only" commands like "worlds", "status", and "users" need
+    to be run often, yet will contain little to no changes from the previous
+    run. This is where this class comes in.
+
+    This class will "poll" those commands at regular intervals and cache their
+    results. Executing the methods for these commands will pull from this cache
+    rather execute the commands directly. This way, the output is returned
+    immediately, at the cost of the information being potentially outdated by a
+    few seconds. In the long run it should keep page load times from being
+    disastrously high when headless clients are under heavy load.
+
+    It also tacks on other attributes such as "name" for easier identification
+    of headless clients in the web interface.
+
+    At the moment, only remote headless clients are supported.
+    """
+
+    def __init__(self, name, host, port, *args, **kwargs):
+        super().__init__(host, port, *args, **kwargs)
+        self.name = name
+        self.running = True
+        self._info = {}
+        self._thread = Thread(target=self._polling_thread)
+        self._thread.start()
+
+    def _polling_thread(self):
+        # Wait for the headless client to finish starting up.
+        self.wait()
+        # TODO: This doesn't handle multiple worlds.
+        while self.running:
+            self._info["worlds"] = super().worlds()
+            sleep(1)
+            self._info["status"] = super().status()
+            sleep(1)
+            self._info["users"] = super().users()
+            sleep(1)
+
+    # TODO: Block these methods if the client is not ready yet.
+
+    def worlds(self):
+        return self._info["worlds"]
+
+    def status(self):
+        return self._info["status"]
+
+    def users(self):
+        return self._info["users"]
+
+    def shutdown(self):
+        self.running = False
+        # Wait for polling thread to stop.
+        self._thread.join()
+        super().shutdown()
+
 class HeadlessClientService(Service):
     def __init__(self):
         super().__init__()
         self.clients = {}
         self.current_id = 0
 
-    def exposed_start_headless_client(self, *args, **kwargs):
+    def exposed_start_headless_client(self, name, host, port, *args, **kwargs):
         """
-        Start a new instance of a `HeadlessClient`. Returns a tuple in the form
-        of (id, `HeadlessClient` instance). All arguments and keyword arguments
-        are passed to `HeadlessClient` as-is.
+        Start a new `HeadlessClientInstance`. Returns a tuple in the form
+        of (id, `HeadlessClientInstance`). All arguments and keyword arguments
+        are passed to `HeadlessClientInstance` as-is.
 
-        The id can be used to get the `HeadlessClient` instance again at a
+        The id can be used to get the `HeadlessClientInstance` again at a
         later time with `get_headless_client()`.
 
-        At the moment, only remote headless clients are supported, so `host` and
-        `port` arguments must be provided as per that class's argument list.
+        At the moment, only remote headless clients are supported.
         """
-        client = RemoteHeadlessClient(*args, **kwargs)
+        client = HeadlessClientInstance(name, host, port, *args, **kwargs)
         self.current_id += 1
         self.clients[self.current_id] = client
         logging.info("Starting headless client with ID: %d" % self.current_id)
@@ -46,8 +109,8 @@ class HeadlessClientService(Service):
 
     def exposed_stop_headless_client(self, cid):
         """
-        Stops the `HeadlessClient` with the given `cid` and removes it from the
-        client list. Returns the exit code of the client.
+        Stops the `HeadlessClientInstance` with the given `cid` and removes it
+        from the client list. Returns the exit code of the client.
         """
         client = self.clients[cid]
         client.shutdown()
@@ -61,8 +124,12 @@ class HeadlessClientService(Service):
         return exit_code
 
     def exposed_get_headless_client(self, cid):
-        """Returns an existing `HeadlessClient` with the given `cid`."""
+        """Returns an existing `HeadlessClientInstance` with the given `cid`."""
         return self.clients[cid]
+
+    def exposed_list_headless_clients(self):
+        """List all currently running headless clients."""
+        return self.clients
 
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer

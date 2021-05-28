@@ -39,9 +39,10 @@ def start():
     Starts a headless client. Data should be submitted as a URL encoded form.
     Required parameters are `host`, `port`, and `neos_dir`.
     """
+    name = request.form["name"]
     host, port = request.form["host"], request.form["port"]
     neos_dir = request.form["neos_dir"]
-    cid = start_headless_client(host, port, neos_dir)
+    cid = start_headless_client(name, host, port, neos_dir)
     return {"success": True, "client_id": cid[0]}
 
 @bp.route("/list")
