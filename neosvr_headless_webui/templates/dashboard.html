@@ -1,18 +1,125 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <div class="row">
-    <div class="col-lg-6">
-      <div class="card card-primary card-outline">
-        <div class="card-body">
-          <h5 class="card-title">Welcome to the dashboard!</h5>
-          <p class="card-text">
-            Stuff will be put here eventually.
-          </p>
-        </div>
-      </div><!-- /.card -->
+{% block content_header %}
+
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0 text-dark">Dashboard</h1>
     </div>
-    <!-- /.col-md-6 -->
   </div>
-  <!-- /.row -->
+
+{% endblock %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-xl col-md-4 col-sm-6">
+      <div class="info-box bg-primary">
+        <span class="info-box-icon"><i class="fas fa-server"></i></span>
+        <div class="info-box-content">
+          <span class="info-box-text">Headless Servers
+            <span data-toggle="tooltip" data-placement="bottom"
+              title="Total number of headless clients currently running.">
+              <i class="fas fa-info-circle"></i>
+            </span>
+          </span>
+          <span class="info-box-number">{{ g.status["clients"] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+      <div class="info-box bg-success">
+        <span class="info-box-icon"><i class="fas fa-globe"></i></span>
+        <div class="info-box-content">
+          <span class="info-box-text">Sessions/Worlds
+            <span data-toggle="tooltip" data-placement="bottom"
+              title="Total sessions/worlds currently running across all headless clients.">
+              <i class="fas fa-info-circle"></i>
+            </span>
+          </span>
+          <span class="info-box-number">{{ g.status["sessions"] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+      <div class="info-box bg-warning">
+        <span class="info-box-icon"><i class="far fa-user"></i></span>
+        <div class="info-box-content">
+          <span class="info-box-text">Users Connected
+            <span data-toggle="tooltip" data-placement="bottom"
+              title="Total users connected to all sessions, but not necessarily present or focused on the world.">
+              <i class="fas fa-info-circle"></i>
+            </span>
+          </span>
+          <span class="info-box-number">{{ g.status["current_users"] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+      <div class="info-box bg-danger">
+        <span class="info-box-icon"><i class="fas fa-user"></i></span>
+        <div class="info-box-content">
+          <span class="info-box-text">Users Present
+            <span data-toggle="tooltip" data-placement="bottom"
+              title="Total users connected to all sessions and currently present in a world.">
+              <i class="fas fa-info-circle"></i>
+            </span>
+          </span>
+          <span class="info-box-number">{{ g.status["present_users"] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+      <div class="info-box bg-info">
+        <span class="info-box-icon"><i class="fas fa-users"></i></span>
+        <div class="info-box-content">
+          <span class="info-box-text">Total Max Capacity
+            <span data-toggle="tooltip" data-placement="bottom"
+              title="The combined max user cap of all sessions.">
+              <i class="fas fa-info-circle"></i>
+            </span>
+          </span>
+          <span class="info-box-number">{{ g.status["max_users"] }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h4>Servers</h4>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for c in g.clients %}
+    {% set status = g.clients[c].status() %}
+    <div class="col-xl-3 col-md-4 col-sm-6">
+      <a href="/client/{{ c }}">
+        <div class="info-box bg-info">
+          <span class="info-box-icon"><i class="fas fa-server"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">{{ g.clients[c].name }}</span>
+            <span class="info-box-number">{{ status["current_users"] }} user(s) connected, {{ status["present_users"] }} present</span>
+            <div class="progress">
+              <div class="progress-bar" style="width: {{ status["current_users"]/status["max_users"]*100 }}%"></div>
+            </div>
+            <span class="progress-description">Max capacity is {{ status["max_users"] }} user(s)</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
 {% endblock %}

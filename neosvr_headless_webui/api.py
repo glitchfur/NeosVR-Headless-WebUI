@@ -29,8 +29,25 @@ def get_headless_client(client_id):
     return client
 
 def list_headless_clients():
-    # TODO: Implement me.
-    pass
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    clients = conn.root.list_headless_clients()
+    status = conn.root.get_manager_status()
+    response = {
+        "stats": status,
+        "clients": {}
+    }
+    # Convert object representations into something more human-readable.
+    # TODO: This doesn't handle multiple worlds.
+    for c in clients:
+        response["clients"][c] = {
+            "name": clients[c].name,
+            "worlds": clients[c].worlds(),
+            "status": clients[c].status(),
+            "users": clients[c].users()
+        }
+    return response
 
 @bp.route("/start", methods=["POST"])
 @api_login_required

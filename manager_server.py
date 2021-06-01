@@ -129,7 +129,31 @@ class HeadlessClientService(Service):
 
     def exposed_list_headless_clients(self):
         """List all currently running headless clients."""
+        # TODO: Ignore clients that are not fully started.
         return self.clients
+
+    def exposed_get_manager_status(self):
+        """
+        Get the current status of the headless client manager, including the
+        number of clients and sessions currently running, the number of
+        connected and present users, and the cumulative max user limit.
+        """
+        status = {
+            "clients": 0,
+            "sessions": 0,
+            "current_users": 0,
+            "present_users": 0,
+            "max_users": 0
+        }
+        for c in self.clients:
+            status["clients"] += 1
+            worlds = self.clients[c].worlds()
+            status["sessions"] += len(worlds)
+            for w in worlds:
+                status["current_users"] += w["users"]
+                status["present_users"] += w["present"]
+                status["max_users"] += w["max_users"]
+        return status
 
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer

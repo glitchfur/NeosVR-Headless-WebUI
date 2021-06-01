@@ -1,5 +1,12 @@
 # Changelog
 
+## 2021-05-31
+* Added function to the headless client manager to return information about the state of the headless client manager itself, including number of running headless clients, sessions, connected users, etc.
+* Added functional dashboard page, which lists all running headless clients and displays combined statistics.
+* Added API endpoint to list all running headless clients.
+* Child templates can now change the content header in the base template.
+* Dashboard logic moved to a separate file.
+
 ## 2021-05-28
 * Added `HeadlessClientInstance` class to the headless client manager which assigns some additional attributes to headless clients and caches the output of certain commands to decrease response times.
 

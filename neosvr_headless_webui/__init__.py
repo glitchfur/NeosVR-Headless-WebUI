@@ -8,13 +8,11 @@ def create_app():
     @app.route("/")
     def index():
         if "user" in session:
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("dashboard.dashboard"))
         return render_template("index.html")
 
-    @app.route("/dashboard")
-    @login_required
-    def dashboard():
-        return render_template("dashboard.html")
+    from . import dashboard
+    app.register_blueprint(dashboard.bp)
 
     from . import auth
     auth.init_oauth(app)
