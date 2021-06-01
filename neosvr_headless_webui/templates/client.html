@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 
+{% block content_header %}
+
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0 text-dark">{{ g.name }}</h1>
+    </div>
+  </div>
+
+{% endblock %}
+
 {% block content %}
 
 <!-- TODO: Implement these per-session tabs. -->
@@ -25,17 +35,17 @@
       <div class="row">
         <div class="col-lg-6">
           <div class="info-box bg-primary">
-            <span class="info-box-icon"><i class="fas fa-users"></i></span>
+            <span class="info-box-icon"><i class="far fa-user"></i></span>
             <div class="info-box-content">
               <span class="info-box-text">Users connected</span>
-              <span class="info-box-number">{{ g.status["current_users"] }}/25</span>
+              <span class="info-box-number">{{ g.status["current_users"] }}/{{ g.status["max_users"] }}</span>
             </div>
           </div>
         </div>
 
         <div class="col-lg-6">
           <div class="info-box bg-success">
-            <span class="info-box-icon"><i class="fas fa-users"></i></span>
+            <span class="info-box-icon"><i class="fas fa-user"></i></span>
             <div class="info-box-content">
               <span class="info-box-text">Users present</span>
               <span class="info-box-number">{{ g.status["present_users"] }}</span>

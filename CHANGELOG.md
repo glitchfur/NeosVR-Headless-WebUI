@@ -6,6 +6,10 @@
 * Added API endpoint to list all running headless clients.
 * Child templates can now change the content header in the base template.
 * Dashboard logic moved to a separate file.
+* Tweaks to the client page:
+  * Name of client now shows in content header.
+  * Actual max user setting now shows instead of "25".
+  * Font Awesome icon changes.
 
 ## 2021-05-28
 * Added `HeadlessClientInstance` class to the headless client manager which assigns some additional attributes to headless clients and caches the output of certain commands to decrease response times.

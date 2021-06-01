@@ -16,6 +16,7 @@ def get_client(client_id):
     except KeyError:
         return ("This client does not exist.", 404) # TODO: Pretty 404
     g.client_id = client_id
+    g.name = client.name
     g.status = client.status()
     g.users = client.users()
     return render_template("client.html")
