@@ -1,4 +1,4 @@
-// client.js
+// session.js
 
 // TODO: Remove all this boilerplate code. I'm not a JavaScript expert.
 // Tried a for loop already but there must be some scope issue I'm not understanding.
