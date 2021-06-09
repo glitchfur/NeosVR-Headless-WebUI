@@ -1,5 +1,15 @@
 # Changelog
 
+## 2021-06-08
+* Added support for multiple sessions per headless client.
+  * Prior to now, headless clients and sessions were treated as the same, with only a headless client's first session being viewable/usable. Now it is possible to switch between more than one session and perform actions on them.
+  * The headless client manager has been updated to support multiple sessions.
+  * The client overview page (`client.html`) is now the session overview page (`session.html`). A new client overview page has been created, which shows information about the headless client as a whole, rather than a particular session.
+  * API changes have been made. The URL for certain functions have been updated as follows:
+    * Old: `/api/v1/<client_id>/status`
+    * New: `/api/v1/<client_id>/<session_id>/status`
+    * Session IDs are analogus to world numbers in the headless client. It must be specified in the URL for commands that take an action on a world or session (such as `status` or `users`). The URL for commands that don't interact with a world (such as `message` or `shutdown`) remains unchanged, with no session ID required.
+
 ## 2021-05-31
 * Added function to the headless client manager to return information about the state of the headless client manager itself, including number of running headless clients, sessions, connected users, etc.
 * Added functional dashboard page, which lists all running headless clients and displays combined statistics.

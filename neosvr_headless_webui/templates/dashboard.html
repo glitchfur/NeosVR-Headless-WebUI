@@ -93,18 +93,19 @@
 
   <div class="row">
     {% for c in g.clients %}
-    {% set status = g.clients[c].status() %}
+    {% set summary = g.clients[c].summary() %}
     <div class="col-xl-3 col-md-4 col-sm-6">
       <a href="/client/{{ c }}">
         <div class="info-box bg-info">
           <span class="info-box-icon"><i class="fas fa-server"></i></span>
           <div class="info-box-content">
             <span class="info-box-text">{{ g.clients[c].name }}</span>
-            <span class="info-box-number">{{ status["current_users"] }} user(s) connected, {{ status["present_users"] }} present</span>
+            <span class="info-box-number">{{ summary["sessions"] }} session(s) running<br />{{ summary["current_users"] }} user(s) connected, {{ summary["present_users"] }} present</span>
             <div class="progress">
-              <div class="progress-bar" style="width: {{ status["current_users"]/status["max_users"]*100 }}%"></div>
+              {% set progress_width = summary["current_users"]/summary["max_users"]*100 %}
+              <div class="progress-bar" style="width: {{ progress_width }}%"></div>
             </div>
-            <span class="progress-description">Max capacity is {{ status["max_users"] }} user(s)</span>
+            <span class="progress-description">Max capacity is {{ summary["max_users"] }} user(s)</span>
           </div>
         </div>
       </a>

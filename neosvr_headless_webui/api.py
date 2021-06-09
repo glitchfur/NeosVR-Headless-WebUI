@@ -38,14 +38,10 @@ def list_headless_clients():
         "stats": status,
         "clients": {}
     }
-    # Convert object representations into something more human-readable.
-    # TODO: This doesn't handle multiple worlds.
     for c in clients:
         response["clients"][c] = {
             "name": clients[c].name,
-            "worlds": clients[c].worlds(),
-            "status": clients[c].status(),
-            "users": clients[c].users()
+            "summary": clients[c].summary()
         }
     return response
 
@@ -78,12 +74,12 @@ def message(client_id):
     response = c.message(user, msg)
     return response
 
-@bp.route("/<int:client_id>/invite", methods=["POST"])
+@bp.route("/<int:client_id>/<int:session_id>/invite", methods=["POST"])
 @api_login_required
-def invite(client_id):
+def invite(client_id, session_id):
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.invite(user)
+    response = c.invite(user, world=session_id)
     return response
 
 # TODO: Implement `friend_requests` here
@@ -100,53 +96,53 @@ def worlds(client_id):
 # TODO: Implement `start_world_url` here
 # TODO: Implement `start_world_template` here
 
-@bp.route("/<int:client_id>/status")
+@bp.route("/<int:client_id>/<int:session_id>/status")
 @api_login_required
-def status(client_id):
+def status(client_id, session_id):
     c = get_headless_client(client_id)
-    return jsonify(c.status())
+    return jsonify(c.status(session_id))
 
-@bp.route("/<int:client_id>/session_url")
+@bp.route("/<int:client_id>/<int:session_id>/session_url")
 @api_login_required
-def session_url(client_id):
+def session_url(client_id, session_id):
     c = get_headless_client(client_id)
-    return c.session_url()
+    return c.session_url(world=session_id)
 
-@bp.route("/<int:client_id>/session_id")
+@bp.route("/<int:client_id>/<int:world_number>/session_id")
 @api_login_required
-def session_id(client_id):
+def session_id(client_id, world_number):
     c = get_headless_client(client_id)
-    return c.session_id()
+    return c.session_id(world=world_number)
 
-@bp.route("/<int:client_id>/users")
+@bp.route("/<int:client_id>/<int:session_id>/users")
 @api_login_required
-def users(client_id):
+def users(client_id, session_id):
     c = get_headless_client(client_id)
-    return jsonify(c.users())
+    return jsonify(c.users(session_id))
 
 # TODO: Implement `close` here
 # TODO: Implement `save` here
 # TODO: Implement `restart` here
 
-@bp.route("/<int:client_id>/kick", methods=["POST"])
+@bp.route("/<int:client_id>/<int:session_id>/kick", methods=["POST"])
 @api_login_required
-def kick(client_id):
+def kick(client_id, session_id):
     """Kicks a given user from the currently focused world."""
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.kick(user)
+    response = c.kick(user, world=session_id)
     return response
 
 # TODO: Implement `silence` here
 # TODO: Implement `unsilence` here
 
-@bp.route("/<int:client_id>/ban", methods=["POST"])
+@bp.route("/<int:client_id>/<int:session_id>/ban", methods=["POST"])
 @api_login_required
-def ban(client_id):
+def ban(client_id, session_id):
     """Bans a given user from the currently focused world."""
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.ban(user)
+    response = c.ban(user, world=session_id)
     return response
 
 # TODO: Implement `unban` here

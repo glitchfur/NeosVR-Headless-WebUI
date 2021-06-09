@@ -48,37 +48,66 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         super().__init__(host, port, *args, **kwargs)
         self.name = name
         self.running = True
-        self._info = {}
-        self._thread = Thread(target=self._polling_thread)
-        self._thread.start()
+        # The keys of the "status" and "users" dicts will be world numbers, or
+        # sessions. The values of these will again be dicts of that world's
+        # respective status and list of users.
+        self._info = {"status": {}, "users": {}}
+        self._polling_thread = Thread(target=self._polling_thread)
+        self._polling_thread.start()
 
     def _polling_thread(self):
         # Wait for the headless client to finish starting up.
         self.wait()
-        # TODO: This doesn't handle multiple worlds.
         while self.running:
+            # "worlds" command has the scope of the whole headless client and
+            # doesn't need to be run per world.
             self._info["worlds"] = super().worlds()
-            sleep(1)
-            self._info["status"] = super().status()
-            sleep(1)
-            self._info["users"] = super().users()
-            sleep(1)
+            sleep(.5)
+            # "status" and "users" have the scope of a single session and so
+            # need to be run per session.
+            for i in range(len(self._info["worlds"])):
+                self._info["status"][i] = super().status(world=i)
+                sleep(.5)
+                self._info["users"][i] = super().users(world=i)
+                sleep(.5)
+            # TODO: Purge old sessions.
 
     # TODO: Block these methods if the client is not ready yet.
 
     def worlds(self):
         return self._info["worlds"]
 
-    def status(self):
-        return self._info["status"]
+    def status(self, world):
+        # TODO: Handle KeyErrors
+        return self._info["status"][world]
 
-    def users(self):
-        return self._info["users"]
+    def users(self, world):
+        # TODO: Handle KeyErrors
+        return self._info["users"][world]
+
+    def summary(self):
+        """
+        Return cumulative stats of all currently running sessions.
+        This is not a built-in headless client command.
+        """
+        status = {
+            "sessions": 0,
+            "current_users": 0,
+            "present_users": 0,
+            "max_users": 0
+        }
+        worlds = self.worlds()
+        status["sessions"] += len(worlds)
+        for w in worlds:
+            status["current_users"] += w["users"]
+            status["present_users"] += w["present"]
+            status["max_users"] += w["max_users"]
+        return status
 
     def shutdown(self):
         self.running = False
         # Wait for polling thread to stop.
-        self._thread.join()
+        self._polling_thread.join()
         super().shutdown()
 
 class HeadlessClientService(Service):
@@ -147,12 +176,10 @@ class HeadlessClientService(Service):
         }
         for c in self.clients:
             status["clients"] += 1
-            worlds = self.clients[c].worlds()
-            status["sessions"] += len(worlds)
-            for w in worlds:
-                status["current_users"] += w["users"]
-                status["present_users"] += w["present"]
-                status["max_users"] += w["max_users"]
+            summary = self.clients[c].summary()
+            names = ("sessions", "current_users", "present_users", "max_users")
+            for n in names:
+                status[n] += summary[n]
         return status
 
 if __name__ == "__main__":
