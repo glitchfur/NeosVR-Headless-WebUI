@@ -185,6 +185,12 @@ class HeadlessClientService(Service):
 if __name__ == "__main__":
     from rpyc.utils.server import ThreadedServer
     server = ThreadedServer(HeadlessClientService(), port=16882,
-        protocol_config={"allow_public_attrs": True} # TODO: Harden this more.
+        protocol_config={
+            # TODO: Harden this more.
+            "allow_public_attrs": True,
+            # I'm not sure if this is needed or not, nor do I know what it does,
+            # but it's in the example documentation so it's going here.
+            "import_custom_exceptions": True
+        }
     )
     server.start()

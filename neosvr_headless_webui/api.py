@@ -1,7 +1,12 @@
 from flask import Blueprint, current_app, jsonify, request
 from .auth import api_login_required
 
-from rpyc import connect
+from rpyc import connect, core
+
+# This is needed to catch exceptions thrown by the internal API.
+from neosvr_headless_api import NeosError
+_gec = core.vinegar._generic_exceptions_cache
+_gec["neosvr_headless_api.NeosError"] = NeosError
 
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
@@ -45,6 +50,21 @@ def list_headless_clients():
         }
     return response
 
+def api_response(message):
+    """
+    Builds and returns an API response, which consists simply of a `success`
+    boolean and an accompanying message. If `message` is an exception, "success"
+    becomes False and "message" is set as the extracted exception message. If
+    `message` is anything other than an exception, "success" becomes True and
+    "message" is set as the message.
+    """
+    if isinstance(message, NeosError):
+        success = False
+        message = message.args[0]
+    else:
+        success = True
+    return {"success": success, "message": message}
+
 @bp.route("/start", methods=["POST"])
 @api_login_required
 def start():
@@ -71,16 +91,22 @@ def list_clients():
 def message(client_id):
     c = get_headless_client(client_id)
     user, msg = request.form["username"], request.form["message"]
-    response = c.message(user, msg)
-    return response
+    try:
+        response = c.message(user, msg)
+        return api_response(response)
+    except NeosError as exc:
+        return api_response(exc)
 
 @bp.route("/<int:client_id>/<int:session_id>/invite", methods=["POST"])
 @api_login_required
 def invite(client_id, session_id):
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.invite(user, world=session_id)
-    return response
+    try:
+        response = c.invite(user, world=session_id)
+        return api_response(response)
+    except NeosError as exc:
+        return api_response(exc)
 
 # TODO: Implement `friend_requests` here
 # TODO: Implement `accept_friend_request` here
@@ -130,8 +156,11 @@ def kick(client_id, session_id):
     """Kicks a given user from the currently focused world."""
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.kick(user, world=session_id)
-    return response
+    try:
+        response = c.kick(user, world=session_id)
+        return api_response(response)
+    except NeosError as exc:
+        return api_response(exc)
 
 # TODO: Implement `silence` here
 # TODO: Implement `unsilence` here
@@ -142,8 +171,11 @@ def ban(client_id, session_id):
     """Bans a given user from the currently focused world."""
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.ban(user, world=session_id)
-    return response
+    try:
+        response = c.ban(user, world=session_id)
+        return api_response(response)
+    except NeosError as exc:
+        return api_response(exc)
 
 # TODO: Implement `unban` here
 
@@ -153,8 +185,11 @@ def ban_by_name(client_id):
     """Bans a given user by their username."""
     c = get_headless_client(client_id)
     user = request.form["username"]
-    response = c.ban_by_name(user)
-    return response
+    try:
+        response = c.ban_by_name(user)
+        return api_response(response)
+    except NeosError as exc:
+        return api_response(exc)
 
 # TODO: Implement `unban_by_name` here
 # TODO: Implement `ban_by_id` here

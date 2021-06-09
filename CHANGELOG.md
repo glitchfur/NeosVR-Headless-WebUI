@@ -9,6 +9,7 @@
     * Old: `/api/v1/<client_id>/status`
     * New: `/api/v1/<client_id>/<session_id>/status`
     * Session IDs are analogus to world numbers in the headless client. It must be specified in the URL for commands that take an action on a world or session (such as `status` or `users`). The URL for commands that don't interact with a world (such as `message` or `shutdown`) remains unchanged, with no session ID required.
+* Fixed API endpoints to handle [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api)'s new method of dealing with errors.
 
 ## 2021-05-31
 * Added function to the headless client manager to return information about the state of the headless client manager itself, including number of running headless clients, sessions, connected users, etc.
