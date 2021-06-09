@@ -4,13 +4,14 @@ from .auth import api_login_required
 from rpyc import connect, core
 
 # This is needed to catch exceptions thrown by the internal API.
-from neosvr_headless_api import NeosError
+from neosvr_headless_api import NeosError, HeadlessNotReady
 _gec = core.vinegar._generic_exceptions_cache
 _gec["neosvr_headless_api.NeosError"] = NeosError
+_gec["neosvr_headless_api.HeadlessNotReady"] = HeadlessNotReady
 
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
-# TODO: Throw 404 on commands that execute on users if the user wasn't found.
+# TODO: Use different HTTP codes for errors?
 
 def start_headless_client(*args, **kwargs):
     conn = connect(
@@ -44,6 +45,9 @@ def list_headless_clients():
         "clients": {}
     }
     for c in clients:
+        # Do not show clients that are not fully started.
+        if not clients[c].ready.is_set():
+            continue
         response["clients"][c] = {
             "name": clients[c].name,
             "summary": clients[c].summary()
@@ -58,7 +62,7 @@ def api_response(message):
     `message` is anything other than an exception, "success" becomes True and
     "message" is set as the message.
     """
-    if isinstance(message, NeosError):
+    if isinstance(message, Exception):
         success = False
         message = message.args[0]
     else:
@@ -80,7 +84,7 @@ def start():
 
 @bp.route("/list")
 @api_login_required
-def list_clients():
+def list_():
     return jsonify(list_headless_clients())
 
 # TODO: Implement `login` here
@@ -89,24 +93,30 @@ def list_clients():
 @bp.route("/<int:client_id>/message", methods=["POST"])
 @api_login_required
 def message(client_id):
-    c = get_headless_client(client_id)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
     user, msg = request.form["username"], request.form["message"]
     try:
         response = c.message(user, msg)
-        return api_response(response)
-    except NeosError as exc:
+    except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/invite", methods=["POST"])
 @api_login_required
 def invite(client_id, session_id):
-    c = get_headless_client(client_id)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
     user = request.form["username"]
     try:
         response = c.invite(user, world=session_id)
-        return api_response(response)
-    except NeosError as exc:
+    except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    return api_response(response)
 
 # TODO: Implement `friend_requests` here
 # TODO: Implement `accept_friend_request` here
@@ -114,8 +124,15 @@ def invite(client_id, session_id):
 @bp.route("/<int:client_id>/worlds")
 @api_login_required
 def worlds(client_id):
-    c = get_headless_client(client_id)
-    return jsonify(c.worlds())
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.worlds()
+    except HeadlessNotReady as exc:
+        return api_response(exc)
+    return jsonify(response)
 
 # TODO: Implement `focus` here
 
@@ -125,26 +142,54 @@ def worlds(client_id):
 @bp.route("/<int:client_id>/<int:session_id>/status")
 @api_login_required
 def status(client_id, session_id):
-    c = get_headless_client(client_id)
-    return jsonify(c.status(session_id))
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.status(session_id)
+    except (HeadlessNotReady, LookupError) as exc:
+        return api_response(exc)
+    return jsonify(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/session_url")
 @api_login_required
 def session_url(client_id, session_id):
-    c = get_headless_client(client_id)
-    return c.session_url(world=session_id)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.session_url(world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return response
 
 @bp.route("/<int:client_id>/<int:world_number>/session_id")
 @api_login_required
 def session_id(client_id, world_number):
-    c = get_headless_client(client_id)
-    return c.session_id(world=world_number)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.session_id(world=world_number)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return response
 
 @bp.route("/<int:client_id>/<int:session_id>/users")
 @api_login_required
 def users(client_id, session_id):
-    c = get_headless_client(client_id)
-    return jsonify(c.users(session_id))
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.users(session_id)
+    except (HeadlessNotReady, LookupError) as exc:
+        return api_response(exc)
+    return jsonify(response)
 
 # TODO: Implement `close` here
 # TODO: Implement `save` here
@@ -154,13 +199,16 @@ def users(client_id, session_id):
 @api_login_required
 def kick(client_id, session_id):
     """Kicks a given user from the currently focused world."""
-    c = get_headless_client(client_id)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
     user = request.form["username"]
     try:
         response = c.kick(user, world=session_id)
-        return api_response(response)
-    except NeosError as exc:
+    except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    return api_response(response)
 
 # TODO: Implement `silence` here
 # TODO: Implement `unsilence` here
@@ -169,13 +217,16 @@ def kick(client_id, session_id):
 @api_login_required
 def ban(client_id, session_id):
     """Bans a given user from the currently focused world."""
-    c = get_headless_client(client_id)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
     user = request.form["username"]
     try:
         response = c.ban(user, world=session_id)
-        return api_response(response)
-    except NeosError as exc:
+    except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    return api_response(response)
 
 # TODO: Implement `unban` here
 
@@ -183,13 +234,16 @@ def ban(client_id, session_id):
 @api_login_required
 def ban_by_name(client_id):
     """Bans a given user by their username."""
-    c = get_headless_client(client_id)
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
     user = request.form["username"]
     try:
         response = c.ban_by_name(user)
-        return api_response(response)
-    except NeosError as exc:
+    except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    return api_response(response)
 
 # TODO: Implement `unban_by_name` here
 # TODO: Implement `ban_by_id` here
@@ -206,7 +260,10 @@ def ban_by_name(client_id):
 @bp.route("/<int:client_id>/shutdown")
 @api_login_required
 def shutdown(client_id):
-    exit_code = stop_headless_client(client_id)
+    try:
+        exit_code = stop_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
     return {"success": True, "exit_code": exit_code}
 
 # TODO: Implement `gc` here

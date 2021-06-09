@@ -14,8 +14,10 @@ def get_client(client_id):
     )
     try:
         client = conn.root.get_headless_client(client_id)
-    except KeyError:
+    except LookupError:
         return ("This client does not exist.", 404) # TODO: Pretty 404
+    if not client.ready.is_set():
+        return ("The client is not ready yet. Try again soon.", 404)
     g.client_id = client_id
     g.name = client.name
     g.worlds = list(enumerate(client.worlds()))
@@ -31,8 +33,10 @@ def get_session(client_id, world_number):
     )
     try:
         client = conn.root.get_headless_client(client_id)
-    except KeyError:
+    except LookupError:
         return ("This client does not exist.", 404) # TODO: Pretty 404
+    if not client.ready.is_set():
+        return ("The client is not ready yet. Try again soon.", 404)
 
     worlds = client.worlds()
     # Lazy way of checking for valid world numbers.

@@ -12,12 +12,14 @@ from threading import Thread
 from time import sleep
 
 from rpyc import Service
-from neosvr_headless_api import RemoteHeadlessClient
+from neosvr_headless_api import RemoteHeadlessClient, HeadlessNotReady
 
 logging.basicConfig(
     format="[%(asctime)s][%(levelname)s] %(message)s",
     level=logging.INFO
 )
+
+NOT_READY_MESSAGE = "The headless client is not ready yet. Try again soon."
 
 class HeadlessClientInstance(RemoteHeadlessClient):
     """
@@ -72,17 +74,23 @@ class HeadlessClientInstance(RemoteHeadlessClient):
                 sleep(.5)
             # TODO: Purge old sessions.
 
-    # TODO: Block these methods if the client is not ready yet.
-
     def worlds(self):
+        if not self.ready.is_set():
+            raise HeadlessNotReady(NOT_READY_MESSAGE)
         return self._info["worlds"]
 
     def status(self, world):
-        # TODO: Handle KeyErrors
+        if not self.ready.is_set():
+            raise HeadlessNotReady(NOT_READY_MESSAGE)
+        if not world in self._info["status"]:
+            raise LookupError("No session with ID %d" % world)
         return self._info["status"][world]
 
     def users(self, world):
-        # TODO: Handle KeyErrors
+        if not self.ready.is_set():
+            raise HeadlessNotReady(NOT_READY_MESSAGE)
+        if not world in self._info["users"]:
+            raise LookupError("No session with ID %d" % world)
         return self._info["users"][world]
 
     def summary(self):
@@ -90,6 +98,8 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         Return cumulative stats of all currently running sessions.
         This is not a built-in headless client command.
         """
+        # TODO: Maybe check if the client is ready here instead of relying
+        # on the `worlds()` call to fail. It doesn't affect anything though ...
         status = {
             "sessions": 0,
             "current_users": 0,
@@ -141,6 +151,8 @@ class HeadlessClientService(Service):
         Stops the `HeadlessClientInstance` with the given `cid` and removes it
         from the client list. Returns the exit code of the client.
         """
+        if not cid in self.clients:
+            raise LookupError("No headless client with ID %d" % cid)
         client = self.clients[cid]
         client.shutdown()
         exit_code = client.process.wait()
@@ -154,11 +166,12 @@ class HeadlessClientService(Service):
 
     def exposed_get_headless_client(self, cid):
         """Returns an existing `HeadlessClientInstance` with the given `cid`."""
+        if not cid in self.clients:
+            raise LookupError("No headless client with ID %d" % cid)
         return self.clients[cid]
 
     def exposed_list_headless_clients(self):
         """List all currently running headless clients."""
-        # TODO: Ignore clients that are not fully started.
         return self.clients
 
     def exposed_get_manager_status(self):
@@ -175,6 +188,9 @@ class HeadlessClientService(Service):
             "max_users": 0
         }
         for c in self.clients:
+            # Skip clients that are still starting up.
+            if not self.clients[c].ready.is_set():
+                continue
             status["clients"] += 1
             summary = self.clients[c].summary()
             names = ("sessions", "current_users", "present_users", "max_users")

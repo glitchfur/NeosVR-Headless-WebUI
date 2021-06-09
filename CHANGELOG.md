@@ -1,5 +1,11 @@
 # Changelog
 
+## 2021-06-09
+* Improved handling of headless clients that are still starting up, and headless clients/sessions that do not exist. API calls that produce errors will now respond with JSON objects instead of returning uncaught exceptions.
+  * Headless clients that are still starting up will not be listed in the API (`/api/v1/list`) until they are ready to accept commands. They will also be hidden from the dashboard until they have finished starting up.
+  * Attempting to use API calls on, or pull up a client or session page for a headless client that has not fully started using its ID will return an error stating that the client is not ready yet, and to try again later.
+  * Attempting API calls on a headless client ID or session ID that doesn't exist will return an error, whereas the web interface will show a 404 page.
+
 ## 2021-06-08
 * Added support for multiple sessions per headless client.
   * Prior to now, headless clients and sessions were treated as the same, with only a headless client's first session being viewable/usable. Now it is possible to switch between more than one session and perform actions on them.
