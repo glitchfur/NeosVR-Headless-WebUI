@@ -35,9 +35,31 @@
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="/dashboard" class="nav-link">Home</a>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="globalActionsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Global Actions
+        </a>
+        <div class="dropdown-menu" aria-labelledby="globalActionsDropdown">
+          <a href="#" class="dropdown-item" data-toggle="modal" data-target="#kickEverywhereModal">Kick everywhere</a>
+          <a href="#" class="dropdown-item text-danger" data-toggle="modal" data-target="#banEverywhereModal">Ban everywhere</a>
+        </div>
       </li>
     </ul>
+
+  <!-- SEARCH FORM -->
+  <form id="findUserForm" class="form-inline ml-3" action="/api/v1/find_user" method="post">
+    <div class="input-group input-group-sm">
+      <input class="form-control form-control-navbar" type="search" name="username" placeholder="Find a user ..." aria-label="Find a user ...">
+      <div class="input-group-append">
+        <button class="btn btn-navbar" type="submit">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+
   </nav>
   <!-- /.navbar -->
 
@@ -66,9 +88,9 @@
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
           <li class="nav-item">
-            <a href="#" class="nav-link active">
+            <a href="/dashboard" class="nav-link active">
               <i class="far fa-circle nav-icon"></i>
-              <p>Home</p>
+              <p>Dashboard</p>
             </a>
           </li>
         </ul>
@@ -110,6 +132,66 @@
 </div>
 <!-- ./wrapper -->
 
+<!-- Kick everywhere modal -->
+<div class="modal fade" id="kickEverywhereModal" tabindex="-1" role="dialog" aria-labelledby="kickEverywhereLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="kickEverywhereLabel">Kick everywhere</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="kickEverywhereForm" action="/api/v1/kick_from_all" method="post">
+        <div class="modal-body">
+          <p>Enter the username of the user you'd like to kick. The user will be removed from all sessions they are currently in, across all headless clients.</p>
+          <div class="form-group">
+            <input type="text" class="form-control" id="kickEverywhereUsername" name="username" placeholder="Username">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Kick Everywhere</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Ban everywhere modal -->
+<div class="modal fade" id="banEverywhereModal" tabindex="-1" role="dialog" aria-labelledby="banEverywhereLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="banEverywhereLabel">Ban everywhere</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="banEverywhereForm" action="/api/v1/ban_from_all" method="post">
+        <div class="modal-body">
+          <p>Enter the username of the user you'd like to ban. <span class="text-danger">This will apply to all headless clients, and all sessions. The user will not be able to join any session again until unbanned.</span></p>
+          <div class="form-group">
+            <input type="text" class="form-control" id="banEverywhereUsername" name="username" placeholder="Username">
+          </div>
+          <div class="form-group">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="kick" id="banEverywhereKickCheck" checked>
+              <label class="form-check-label" for="banEverywhereKickCheck">
+                Also kick from sessions, if present
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Ban Everywhere</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% block modals %}{% endblock %}
 
 <!-- REQUIRED SCRIPTS -->
@@ -120,6 +202,8 @@
 <script src="/static/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="/static/js/adminlte.min.js"></script>
+
+<script src="/static/js/base.js"></script>
 
 <!-- Per page scripts, if any, appended here. -->
 {% block scripts %}{% endblock %}

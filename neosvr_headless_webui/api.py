@@ -87,6 +87,41 @@ def start():
 def list_():
     return jsonify(list_headless_clients())
 
+@bp.route("/find_user", methods=["POST"])
+def find_user():
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    user = request.form["username"]
+    found_list = conn.root.find_user(user)
+    return {"username": user, "sessions": found_list}
+
+@bp.route("/kick_from_all", methods=["POST"])
+def kick_from_all():
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    user = request.form["username"]
+    kick_list = conn.root.kick_from_all(user)
+    return {"username": user, "kicks": kick_list}
+
+@bp.route("/ban_from_all", methods=["POST"])
+def ban_from_all():
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    user = request.form["username"]
+    kick = True if request.form["kick"] == "true" else False
+    ban_kick_list = conn.root.ban_from_all(user, kick=kick)
+    response = {
+        "username": user,
+        "bans": ban_kick_list["bans"],
+        "kicks": ban_kick_list["kicks"]
+    }
+    return response
+
+# START HEADLESS COMMANDS
+
 # TODO: Implement `login` here
 # TODO: Implement `logout` here
 

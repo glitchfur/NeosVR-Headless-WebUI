@@ -1,5 +1,11 @@
 # Changelog
 
+## 2021-06-12
+* Added several new "global actions" that can be perfomed on all sessions across all headless clients at once. There are new API endpoints for these, as well as a new dropdown menu and search bar in the navigation bar of every page. These new actions include:
+  * **Kick everywhere:** Find and kick a user from every session they are in, whether they are present or not.
+  * **Ban everywhere:** Ban a user from every headless client, and optionally kick them from every session they're in as well.
+  * **Find user:** Use the search bar to find a user and immediately jump to the session that they are in. This defaults to the session they're currently present in. If they're not present in any session, it will instead find the first session that they're connected to, but not present in. If they're not found at all, an error will be shown.
+
 ## 2021-06-09
 * Improved handling of headless clients that are still starting up, and headless clients/sessions that do not exist. API calls that produce errors will now respond with JSON objects instead of returning uncaught exceptions.
   * Headless clients that are still starting up will not be listed in the API (`/api/v1/list`) until they are ready to accept commands. They will also be hidden from the dashboard until they have finished starting up.
