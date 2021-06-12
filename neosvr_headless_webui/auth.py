@@ -12,9 +12,9 @@ def init_oauth(app):
     oauth = OAuth(app)
     oauth.register(
         name="concat",
-        access_token_url="https://reg.goblfc.org/api/oauth/token",
-        authorize_url="https://reg.goblfc.org/oauth/authorize",
-        api_base_url="https://reg.goblfc.org/",
+        access_token_url=app.config["CONCAT_ACCESS_TOKEN_URL"],
+        authorize_url=app.config["CONCAT_AUTHORIZE_URL"],
+        api_base_url=app.config["CONCAT_API_BASE_URL"],
         client_kwargs={
             "scope": "pii:basic",
             "token_endpoint_auth_method": "client_secret_post"

@@ -5,6 +5,7 @@
   * **Kick everywhere:** Find and kick a user from every session they are in, whether they are present or not.
   * **Ban everywhere:** Ban a user from every headless client, and optionally kick them from every session they're in as well.
   * **Find user:** Use the search bar to find a user and immediately jump to the session that they are in. This defaults to the session they're currently present in. If they're not present in any session, it will instead find the first session that they're connected to, but not present in. If they're not found at all, an error will be shown.
+* OAuth endpoints have been moved into the configuration file, so they are no longer hard-coded. The OAuth "app name" as displayed on the login page is now customizable as well.
 
 ## 2021-06-09
 * Improved handling of headless clients that are still starting up, and headless clients/sessions that do not exist. API calls that produce errors will now respond with JSON objects instead of returning uncaught exceptions.
