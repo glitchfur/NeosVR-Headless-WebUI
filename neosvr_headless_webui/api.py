@@ -69,6 +69,34 @@ def api_response(message):
         success = True
     return {"success": success, "message": message}
 
+def convert_netref(obj):
+    """
+    Recursively converts rpyc's "netref" representation of `dict`s and `list`s
+    into native objects. Use this before passing any `dict` or `list` generated
+    by an rpyc server directly into Python's standard `json` library, as it does
+    not like serializing those objects even though they are supposed to look and
+    feel like local objects. If `obj` is neither a `dict` or `list` then `obj`
+    is returned without any modification.
+    """
+    if isinstance(obj, dict):
+        res = {}
+        for key in obj:
+            if isinstance(obj[key], (list, dict)):
+                res[key] = convert_netref(obj[key])
+            else:
+                res[key] = obj[key]
+        return res
+    elif isinstance(obj, list):
+        res = []
+        for val in obj:
+            if isinstance(val, (list, dict)):
+                res.append(convert_netref(val))
+            else:
+                res.append(val)
+        return res
+    else:
+        return obj
+
 @bp.route("/start", methods=["POST"])
 @api_login_required
 def start():
@@ -93,7 +121,7 @@ def find_user():
         current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
     )
     user = request.form["username"]
-    found_list = conn.root.find_user(user)
+    found_list = convert_netref(conn.root.find_user(user))
     return {"username": user, "sessions": found_list}
 
 @bp.route("/kick_from_all", methods=["POST"])
@@ -102,7 +130,7 @@ def kick_from_all():
         current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
     )
     user = request.form["username"]
-    kick_list = conn.root.kick_from_all(user)
+    kick_list = convert_netref(conn.root.kick_from_all(user))
     return {"username": user, "kicks": kick_list}
 
 @bp.route("/ban_from_all", methods=["POST"])
@@ -112,7 +140,7 @@ def ban_from_all():
     )
     user = request.form["username"]
     kick = True if request.form["kick"] == "true" else False
-    ban_kick_list = conn.root.ban_from_all(user, kick=kick)
+    ban_kick_list = convert_netref(conn.root.ban_from_all(user, kick=kick))
     response = {
         "username": user,
         "bans": ban_kick_list["bans"],

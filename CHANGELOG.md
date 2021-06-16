@@ -1,5 +1,8 @@
 # Changelog
 
+## 2021-06-16
+* Fixed a bug that caused global actions to return HTTP 500 errors in production environments.
+
 ## 2021-06-12
 * Added several new "global actions" that can be perfomed on all sessions across all headless clients at once. There are new API endpoints for these, as well as a new dropdown menu and search bar in the navigation bar of every page. These new actions include:
   * **Kick everywhere:** Find and kick a user from every session they are in, whether they are present or not.
