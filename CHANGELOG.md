@@ -1,5 +1,19 @@
 # Changelog
 
+## 2021-06-19
+* The following API endpoints have been added, accessible at `/api/v1/<client_id>`:
+  * `/<session_id>/close` - Close a session/world
+  * `/<session_id>/silence` - Silence a user
+  * `/<session_id>/unsilence` - Unsilence a user
+  * `/unban` - Unban a user
+  * `/list_bans` - List all active bans
+  * `/unban_by_name` - Unban a user by username
+  * `/ban_by_id` - Ban a user by user ID
+  * `/unban_by_id` - Unban a user by user ID
+  * `/<session_id>/role` - Change a user's role
+  * `/<session_id>/name` - Change the name of a session/world
+  * `/<client_id>/<session_id>/description` - Change the description of a session/world
+
 ## 2021-06-16
 * Fixed a bug that caused global actions to return HTTP 500 errors in production environments.
 

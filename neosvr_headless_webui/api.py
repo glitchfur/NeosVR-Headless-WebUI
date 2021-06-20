@@ -59,9 +59,12 @@ def api_response(message):
     Builds and returns an API response, which consists simply of a `success`
     boolean and an accompanying message. If `message` is an exception, "success"
     becomes False and "message" is set as the extracted exception message. If
-    `message` is anything other than an exception, "success" becomes True and
-    "message" is set as the message.
+    `message` is `None`, "success" becomes True and "message" is omitted. If
+    `message` is anything other than an exception or `None`, "success" becomes
+    True and "message" is set as the message.
     """
+    if message == None:
+        return {"success": True}
     if isinstance(message, Exception):
         success = False
         message = message.args[0]
@@ -254,7 +257,20 @@ def users(client_id, session_id):
         return api_response(exc)
     return jsonify(response)
 
-# TODO: Implement `close` here
+@bp.route("/<int:client_id>/<int:session_id>/close", methods=["POST"])
+@api_login_required
+def close(client_id, session_id):
+    """Close the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.close(world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
 # TODO: Implement `save` here
 # TODO: Implement `restart` here
 
@@ -273,8 +289,35 @@ def kick(client_id, session_id):
         return api_response(exc)
     return api_response(response)
 
-# TODO: Implement `silence` here
-# TODO: Implement `unsilence` here
+@bp.route("/<int:client_id>/<int:session_id>/silence", methods=["POST"])
+@api_login_required
+def silence(client_id, session_id):
+    """Silence a user in the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user = request.form["username"]
+    try:
+        response = c.silence(user, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route("/<int:client_id>/<int:session_id>/unsilence", methods=["POST"])
+@api_login_required
+def unsilence(client_id, session_id):
+    """Remove silence from a user in the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user = request.form["username"]
+    try:
+        response = c.unsilence(user, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/ban", methods=["POST"])
 @api_login_required
@@ -291,7 +334,34 @@ def ban(client_id, session_id):
         return api_response(exc)
     return api_response(response)
 
-# TODO: Implement `unban` here
+@bp.route("/<int:client_id>/unban", methods=["POST"])
+@api_login_required
+def unban(client_id):
+    """Unbans a given user."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user = request.form["username"]
+    try:
+        response = c.unban(user)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route("/<int:client_id>/list_bans")
+@api_login_required
+def list_bans(client_id):
+    """Lists all currently banned users."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.list_bans()
+    except HeadlessNotReady as exc:
+        return api_response(exc)
+    return jsonify(response)
 
 @bp.route("/<int:client_id>/ban_by_name", methods=["POST"])
 @api_login_required
@@ -308,15 +378,102 @@ def ban_by_name(client_id):
         return api_response(exc)
     return api_response(response)
 
-# TODO: Implement `unban_by_name` here
-# TODO: Implement `ban_by_id` here
-# TODO: Implement `unban_by_id` here
+@bp.route("/<int:client_id>/unban_by_name", methods=["POST"])
+@api_login_required
+def unban_by_name(client_id):
+    """Unbans a given user by their username."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user = request.form["username"]
+    try:
+        response = c.unban_by_name(user)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route("/<int:client_id>/ban_by_id", methods=["POST"])
+@api_login_required
+def ban_by_id(client_id):
+    """Bans a given user by their user ID."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user_id = request.form["id"]
+    try:
+        response = c.ban_by_id(user_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route("/<int:client_id>/unban_by_id", methods=["POST"])
+@api_login_required
+def unban_by_id(client_id):
+    """Unbans a given user by their user ID."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user_id = request.form["id"]
+    try:
+        response = c.unban_by_id(user_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
 # TODO: Implement `respawn` here
-# TODO: Implement `role` here
-# TODO: Implement `name` here
+
+@bp.route("/<int:client_id>/<int:session_id>/role", methods=["POST"])
+@api_login_required
+def role(client_id, session_id):
+    """Change a user's role in the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user = request.form["username"]
+    role = request.form["role"]
+    try:
+        response = c.role(user, role, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route("/<int:client_id>/<int:session_id>/name", methods=["POST"])
+@api_login_required
+def name(client_id, session_id):
+    """Change the name of the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    name = request.form["name"]
+    try:
+        response = c.name(name, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
 # TODO: Implement `access_level` here
 # TODO: Implement `hide_from_listing` here
-# TODO: Implement `description` here
+
+@bp.route("/<int:client_id>/<int:session_id>/description", methods=["POST"])
+@api_login_required
+def description(client_id, session_id):
+    """Change the description of the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    description = request.form["description"]
+    try:
+        response = c.description(description, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
 # TODO: Implement `max_users` here
 # TODO: Implement `away_kick_interval` here
 
