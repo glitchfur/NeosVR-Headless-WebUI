@@ -1,5 +1,9 @@
 # Changelog
 
+## 2021-06-21
+* Resolved a variable name conflict in `HeadlessClientInstance` where `name`, the attribute for the name of the client, was overriding `name()`, the function to get the name of a session.
+  * The client's name can now be obtained through the `client_name` attribute.
+
 ## 2021-06-19
 * The following API endpoints have been added, accessible at `/api/v1/<client_id>`:
   * `/<session_id>/close` - Close a session/world

@@ -49,7 +49,7 @@ def list_headless_clients():
         if not clients[c].ready.is_set():
             continue
         response["clients"][c] = {
-            "name": clients[c].name,
+            "name": clients[c].client_name,
             "summary": clients[c].summary()
         }
     return response

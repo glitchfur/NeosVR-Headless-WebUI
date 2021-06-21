@@ -19,7 +19,7 @@ def get_client(client_id):
     if not client.ready.is_set():
         return ("The client is not ready yet. Try again soon.", 404)
     g.client_id = client_id
-    g.name = client.name
+    g.client_name = client.client_name
     g.worlds = list(enumerate(client.worlds()))
     g.summary = client.summary()
     return render_template("client.html")
@@ -45,7 +45,7 @@ def get_session(client_id, world_number):
 
     g.client_id = client_id
     g.world_number = world_number
-    g.name = client.name
+    g.client_name = client.client_name
     g.worlds = list(enumerate(worlds))
     g.status = client.status(world=world_number)
     g.users = client.users(world=world_number)

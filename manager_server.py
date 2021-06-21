@@ -48,7 +48,8 @@ class HeadlessClientInstance(RemoteHeadlessClient):
 
     def __init__(self, name, host, port, *args, **kwargs):
         super().__init__(host, port, *args, **kwargs)
-        self.name = name
+        # The name of the headless client itself, not any session.
+        self.client_name = name
         self.running = True
         # The keys of the "status" and "users" dicts will be world numbers, or
         # sessions. The values of these will again be dicts of that world's
