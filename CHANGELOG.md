@@ -4,6 +4,7 @@
 * The host user of a headless client is now treated specially on session pages. The headless user's name now shows in bold, has a hoverable info icon explaining its purpose, and has had its action buttons removed.
 * Other visual tweaks have been made to session pages. The session name, description, and tags are now displayed more prominently. A button has been added that will allow you to join the session in Neos.
 * Updated [AdminLTE](https://github.com/ColorlibHQ/AdminLTE) from 3.0.5 to 3.1.0.
+* Fixed button groups on client and session pages causing JavaScript errors in Bootstrap.
 
 ## 2021-06-21
 * Resolved a variable name conflict in `HeadlessClientInstance` where `name`, the attribute for the name of the client, was overriding `name()`, the function to get the name of a session.

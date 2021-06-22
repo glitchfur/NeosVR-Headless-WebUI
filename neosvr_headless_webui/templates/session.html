@@ -14,10 +14,10 @@
 
   <div class="row">
     <div class="col-lg-12">
-      <div class="btn-group btn-group-toggle mb-3" data-toggle="buttons">
-        <a class="btn btn-dark" href="/client/{{ g.client_id }}" role="button">Server info</a>
+      <div class="btn-group mb-3" role="group">
+        <a class="btn btn-dark" href="/client/{{ g.client_id }}">Server info</a>
         {% for world in g.worlds %}
-        <a class="btn btn-dark{% if world[0] == g.world_number %} active font-weight-bold{% endif %}" href="/client/{{ g.client_id }}/session/{{ world[0] }}" role="button">{{ world[1]["name"] }}</a>
+        <a class="btn btn-dark{% if world[0] == g.world_number %} active font-weight-bold{% endif %}" href="/client/{{ g.client_id }}/session/{{ world[0] }}">{{ world[1]["name"] }}</a>
         {% endfor %}
       </div>
     </div>
