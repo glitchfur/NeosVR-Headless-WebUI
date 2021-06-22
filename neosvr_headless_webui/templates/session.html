@@ -92,7 +92,20 @@
               </tr>
             </thead>
             <tbody>
-              {% for user in g.users %}
+              {% set headless_user = g.users[0] %}
+              <tr>
+                <td><b>{{ headless_user.name }}</b>
+                  <span data-toggle="tooltip" data-placement="bottom" title="This is the headless user hosting the session. They are permanently hidden and can't be removed.">
+                    <i class="fas fa-info-circle"></i>
+                  </span>
+                </td>
+                <td>{{ headless_user.role }}</td>
+                <td><span class="badge {% if headless_user.present %}badge-success{% else %}badge-danger{% endif %}">{{ headless_user.present }}</span></td>
+                <td>{{ headless_user.ping }} ms</td>
+                <td>{{ headless_user.fps }}</td>
+                <td></td>
+              </tr>
+              {% for user in g.users[1:] %}
               <tr>
                 <td>{{ user.name }}</td>
                 <td>{{ user.role }}</td>
@@ -295,6 +308,12 @@
 {% endblock %}
 
 {% block scripts %}
+
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 
 <script src="/static/js/session.js"></script>
 
