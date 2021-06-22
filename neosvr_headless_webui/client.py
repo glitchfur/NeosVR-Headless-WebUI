@@ -49,4 +49,5 @@ def get_session(client_id, world_number):
     g.worlds = list(enumerate(worlds))
     g.status = client.status(world=world_number)
     g.users = client.users(world=world_number)
+    g.session_url = client.session_url(world=world_number)
     return render_template("session.html")
