@@ -110,7 +110,8 @@ def start():
     name = request.form["name"]
     host, port = request.form["host"], request.form["port"]
     neos_dir = request.form["neos_dir"]
-    cid = start_headless_client(name, host, port, neos_dir)
+    config = request.form["config"] if "config" in request.form else None
+    cid = start_headless_client(name, host, port, neos_dir, config=config)
     return {"success": True, "client_id": cid[0]}
 
 @bp.route("/list")
