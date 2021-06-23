@@ -1,6 +1,13 @@
 # This is a blank reference configuration. Do not edit this directly.
 # Copy this file to "config.py" in your instance folder and fill values there.
 
+# App name, displayed on every page in the top-left corner when logged in.
+APP_NAME = "Event Name"
+# Optional app logo, which is displayed to the left of the app name and also on
+# the login page if it exists. The path should be relative to the instance
+# folder. The image must be a PNG image. Image size should ideally be 256x256 or
+# less as it will be scaled down.
+APP_LOGO = "logo.png"
 # Secret key used for encrypting session cookies.
 # A secure random key can be generated like this:
 # python -c 'import os; print(os.urandom(16))'

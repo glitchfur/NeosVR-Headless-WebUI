@@ -1,9 +1,18 @@
 from flask import Flask, redirect, render_template, session, url_for
 from .auth import login_required
 
+from os import path
+from base64 import b64encode
+
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile("config.py")
+
+    logo_path = path.join(app.instance_path, app.config["APP_LOGO"])
+    if path.exists(logo_path):
+        with open(logo_path, "rb") as logo_fp:
+            logo_data = b64encode(logo_fp.read()).decode("ascii")
+            app.config["APP_LOGO_DATA"] = logo_data
 
     @app.route("/")
     def index():

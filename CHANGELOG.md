@@ -2,6 +2,7 @@
 
 ## 2021-06-23
 * Added a functional sidebar. A link to the dashboard is provided at the top, with collapsible menus underneath for currently running clients and sessions. Custom links to external sites can also be displayed in the sidebar by adding them to `config.py`. See the comments in `config_example.py` for more information.
+* The app name and app logo have been moved into the configuration file to allow for customization. The app name/logo are displayed on every page across the web application. For instance, if you are running an event, you can set the app name to the name of the event. See `config_example.py` for more information.
 
 ## 2021-06-22
 * The host user of a headless client is now treated specially on session pages. The headless user's name now shows in bold, has a hoverable info icon explaining its purpose, and has had its action buttons removed.

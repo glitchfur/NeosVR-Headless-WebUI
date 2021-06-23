@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>VBLFC Control Panel</title>
+  <title>{{ config["APP_NAME"]}} Neos Dashboard</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Theme style -->
@@ -13,9 +13,11 @@
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
-  <div class="login-logo">
-    <img src="/static/images/BLFC-ChipIcon.png" alt="" width="72">
-  </div>
+  {% if "APP_LOGO_DATA" in config %}
+    <div class="login-logo">
+      <img src="data:image/png;base64,{{ config['APP_LOGO_DATA'] }}" style="max-width: 80px;">
+    </div>
+  {% endif %}
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       <div class="alert alert-danger alert-dismissable text-center">
@@ -29,7 +31,7 @@
   <!-- /.login-logo -->
   <div class="card">
     <div class="card-body login-card-body">
-      <p class="login-box-msg"><b>Welcome!</b> This is the VBLFC Control Panel used for controlling instances of the NeosVR headless client. To begin, click the button below to sign in with ConCat.</p>
+      <p class="login-box-msg"><b>Welcome!</b> This is the {{ config["APP_NAME"]}} Neos dashboard used for controlling instances of the NeosVR headless client. To begin, click the button below to sign in.</p>
 
       <div class="text-center">
         <a href="/login" class="btn btn-block bg-gradient-primary btn-lg">

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-  <title>VBLFC Control Panel</title>
+  <title>{{ config["APP_NAME"]}} Neos Dashboard</title>
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="/static/fonts/fontawesome/css/all.min.css">
@@ -69,8 +69,12 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="/dashboard" class="brand-link navbar-primary">
-      <img src="/static/images/BLFC-ChipIcon.png" alt="BLFC Chip Logo" class="brand-image img-circle elevation-3">
-      <span class="brand-text font-weight-bold">VBLFC</span>
+      {% if "APP_LOGO_DATA" in config %}
+        <img src="data:image/png;base64,{{ config['APP_LOGO_DATA'] }}" class="brand-image img-circle elevation-3">
+        <b class="brand-text">{{ config["APP_NAME"] }}</b>
+      {% else %}
+        <b class="brand-text" style="margin-left: 10px;">{{ config["APP_NAME"] }}</b>
+      {% endif %}
     </a>
 
     <!-- Sidebar -->
