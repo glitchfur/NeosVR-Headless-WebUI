@@ -33,3 +33,11 @@ MANAGER_HOST, MANAGER_PORT = "127.0.0.1", 16882
 # name of the link, and the third being the link itself.
 # Example: ("fas fa-globe", "Neos Website", "https://neos.com/")
 SIDEBAR_LINKS = []
+# Show or hide the "Invite" and "Message" buttons on session pages.
+# Both of these actions require being friends with the Neos account hosting the
+# session. If you are hosting a public session, this may not be the case for
+# most people, and so it may be desirable to hide these functions. Note that
+# this is only a cosmetic change. It doesn't prevent the use of the API calls
+# for inviting or messaging users.
+ENABLE_INVITE = True
+ENABLE_MESSAGE = True

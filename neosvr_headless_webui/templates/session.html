@@ -85,7 +85,9 @@
         <div class="card-header">
           <h3 class="card-title" style="position: relative; top: 5px;">User list</h3>
           <div class="card-tools">
-            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteModal">Invite</button>
+            {% if config["ENABLE_INVITE"] %}
+              <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteModal">Invite</button>
+            {% endif %}
             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#kickByNameModal">Kick By Name</button>
             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#banByNameModal">Ban By Name</button>
           </div>
@@ -124,7 +126,9 @@
                 <td>{{ user.ping }} ms</td>
                 <td>{{ user.fps }}</td>
                 <td>
-                  <button class="btn btn-info btn-xs" data-toggle="modal" data-target="#messageModal" data-username="{{ user.name }}"><b>Message</b></button>
+                  {% if config["ENABLE_MESSAGE"] %}
+                    <button class="btn btn-info btn-xs" data-toggle="modal" data-target="#messageModal" data-username="{{ user.name }}"><b>Message</b></button>
+                  {% endif %}
                   <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#kickModal" data-username="{{ user.name }}"><b>Kick</b></button>
                   <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#banModal" data-username="{{ user.name }}"><b>Ban</b></button>
                 </td>
@@ -143,6 +147,7 @@
 
 {% block modals %}
 
+  {% if config["ENABLE_INVITE"] %}
   <!-- Invite modal -->
   <div class="modal fade" id="inviteModal" tabindex="-1" role="dialog" aria-labelledby="inviteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -173,6 +178,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- Kick by name modal -->
   <div class="modal fade" id="kickByNameModal" tabindex="-1" role="dialog" aria-labelledby="kickByNameModalLabel" aria-hidden="true">
@@ -229,6 +235,7 @@
     </div>
   </div>
 
+  {% if config["ENABLE_MESSAGE"] %}
   <!-- Message modal -->
   <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -266,6 +273,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- Kick modal -->
   <div class="modal fade" id="kickModal" tabindex="-1" role="dialog" aria-labelledby="kickModalLabel" aria-hidden="true">

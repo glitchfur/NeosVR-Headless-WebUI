@@ -4,6 +4,7 @@
 * Added a functional sidebar. A link to the dashboard is provided at the top, with collapsible menus underneath for currently running clients and sessions. Custom links to external sites can also be displayed in the sidebar by adding them to `config.py`. See the comments in `config_example.py` for more information.
 * The app name and app logo have been moved into the configuration file to allow for customization. The app name/logo are displayed on every page across the web application. For instance, if you are running an event, you can set the app name to the name of the event. See `config_example.py` for more information.
 * API endpoint `/api/v1/start` now accepts a `config` value to specify the location of a configuration file for the headless client. If it is not specified, Neos will use the default configuration location.
+* Added two new variables `ENABLE_INVITE` and `ENABLE_MESSAGE` to the configuration file, which will show or hide the "Invite" and "Message" buttons on session pages. It may be desirable to hide these buttons when hosting a public session, where the Neos account hosting the session may not be friends with the people to be invited or messaged, or if there is not a Neos account logged into the headless client at all.
 
 ## 2021-06-22
 * The host user of a headless client is now treated specially on session pages. The headless user's name now shows in bold, has a hoverable info icon explaining its purpose, and has had its action buttons removed.
