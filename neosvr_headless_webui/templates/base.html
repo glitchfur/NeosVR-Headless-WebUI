@@ -86,18 +86,57 @@
 
       <!-- Sidebar Menu -->
       <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
           <li class="nav-item">
-            <a href="/dashboard" class="nav-link active">
-              <i class="far fa-circle nav-icon"></i>
+            <a href="/dashboard" class="nav-link{% if request.path == '/dashboard' %} active{% endif %}">
+              <i class="fas fa-tachometer-alt nav-icon"></i>
               <p>Dashboard</p>
             </a>
           </li>
+          {% for l in config["SIDEBAR_LINKS"] %}
+            <li class="nav-item">
+              <a href="{{ l[2] }}" target="_blank" class="nav-link">
+                <i class="{{ l[0] }} nav-icon"></i>
+                <p>
+                  {{ l[1] }} <i class="right fas fa-external-link-alt"></i>
+                </p>
+              </a>
+            </li>
+          {% endfor %}
+          <li class="nav-header">SERVERS</li>
+          {% for c in g.clients %}
+            <li class="nav-item{% if request.path.startswith('/client/%d' % c) %} menu-open{% endif %}">
+              <a href="#" class="nav-link{% if request.path.startswith('/client/%d' % c) %} active{% endif %}">
+                <i class="fas fa-server nav-icon"></i>
+                <p>
+                  {{ g.clients[c].client_name }}
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/client/{{ c }}" class="nav-link{% if request.path == '/client/%d' % c %} active{% endif %}">
+                    <i class="fas fa-table nav-icon"></i>
+                    <p>Server info</p>
+                  </a>
+                </li>
+                {% for w in g.clients[c].worlds() %}
+                  <li class="nav-item">
+                    <a href="/client/{{ c }}/session/{{ loop.index0 }}" class="nav-link{% if request.path == '/client/%d/session/%d' % (c, loop.index0) %} active{% endif %}">
+                      <i class="fas fa-globe nav-icon"></i>
+                      <p>{{ w["name"] }}</p>
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endfor %}
         </ul>
       </nav>
       <!-- /.sidebar-menu -->
+
     </div>
     <!-- /.sidebar -->
   </aside>

@@ -5,6 +5,22 @@ from rpyc import connect
 
 bp = Blueprint("client", __name__, url_prefix="/client")
 
+def list_headless_clients():
+    """Lists headless clients that are currently running and ready."""
+    # TODO: This code is duplicated in `dashboard.py`.
+    # Could be cleaned up a little.
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    clients = conn.root.list_headless_clients()
+
+    ready_clients = {}
+    for c in clients:
+        if not clients[c].ready.is_set():
+            continue
+        ready_clients[c] = clients[c]
+    return ready_clients
+
 @bp.route("/<int:client_id>")
 @login_required
 def get_client(client_id):
@@ -18,6 +34,8 @@ def get_client(client_id):
         return ("This client does not exist.", 404) # TODO: Pretty 404
     if not client.ready.is_set():
         return ("The client is not ready yet. Try again soon.", 404)
+
+    g.clients = list_headless_clients()
     g.client_id = client_id
     g.client_name = client.client_name
     g.worlds = list(enumerate(client.worlds()))
@@ -43,6 +61,7 @@ def get_session(client_id, world_number):
     if world_number > len(worlds) - 1:
         return ("This session does not exist.", 404)
 
+    g.clients = list_headless_clients()
     g.client_id = client_id
     g.world_number = world_number
     g.client_name = client.client_name

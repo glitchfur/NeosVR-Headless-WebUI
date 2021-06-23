@@ -1,5 +1,8 @@
 # Changelog
 
+## 2021-06-23
+* Added a functional sidebar. A link to the dashboard is provided at the top, with collapsible menus underneath for currently running clients and sessions. Custom links to external sites can also be displayed in the sidebar by adding them to `config.py`. See the comments in `config_example.py` for more information.
+
 ## 2021-06-22
 * The host user of a headless client is now treated specially on session pages. The headless user's name now shows in bold, has a hoverable info icon explaining its purpose, and has had its action buttons removed.
 * Other visual tweaks have been made to session pages. The session name, description, and tags are now displayed more prominently. A button has been added that will allow you to join the session in Neos.
