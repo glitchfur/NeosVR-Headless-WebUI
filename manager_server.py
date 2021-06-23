@@ -8,6 +8,7 @@
 # It should be started before the web application is started.
 
 import logging
+import argparse
 from threading import Thread
 from time import sleep
 
@@ -20,6 +21,38 @@ logging.basicConfig(
 )
 
 NOT_READY_MESSAGE = "The headless client is not ready yet. Try again soon."
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Manage multiple NeosVR-Headless-API RPC servers"
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="The host or IP address to bind to. (Default: 127.0.0.1)"
+    )
+    parser.add_argument(
+        "-p", "--port",
+        type=int,
+        default=16882,
+        help="The TCP port to bind to. (Default: 16882)"
+    )
+    args = parser.parse_args()
+
+    from rpyc.utils.server import ThreadedServer
+    server = ThreadedServer(
+        HeadlessClientService(),
+        hostname=args.host,
+        port=args.port,
+        protocol_config={
+            # TODO: Harden this more.
+            "allow_public_attrs": True,
+            # I'm not sure if this is needed or not, nor do I know what it does,
+            # but it's in the example documentation so it's going here.
+            "import_custom_exceptions": True
+        }
+    )
+    server.start()
 
 class HeadlessClientInstance(RemoteHeadlessClient):
     """
@@ -326,14 +359,4 @@ class HeadlessClientService(Service):
         return {"bans": bans, "kicks": kicks}
 
 if __name__ == "__main__":
-    from rpyc.utils.server import ThreadedServer
-    server = ThreadedServer(HeadlessClientService(), port=16882,
-        protocol_config={
-            # TODO: Harden this more.
-            "allow_public_attrs": True,
-            # I'm not sure if this is needed or not, nor do I know what it does,
-            # but it's in the example documentation so it's going here.
-            "import_custom_exceptions": True
-        }
-    )
-    server.start()
+    main()
