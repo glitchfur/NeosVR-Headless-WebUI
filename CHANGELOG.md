@@ -1,5 +1,9 @@
 # Changelog
 
+## 2021-06-24
+* A new card has been added to client pages showing additional information about the headless client. Specifically: Neos version, compatibility hash, machine ID, and supported network protocols.
+* The version of the headless client has been added to all session pages as well, in the header of the session status card.
+
 ## 2021-06-23
 * Added a functional sidebar. A link to the dashboard is provided at the top, with collapsible menus underneath for currently running clients and sessions. Custom links to external sites can also be displayed in the sidebar by adding them to `config.py`. See the comments in `config_example.py` for more information.
 * The app name and app logo have been moved into the configuration file to allow for customization. The app name/logo are displayed on every page across the web application. For instance, if you are running an event, you can set the app name to the name of the event. See `config_example.py` for more information.

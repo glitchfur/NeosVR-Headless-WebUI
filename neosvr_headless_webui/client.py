@@ -40,6 +40,11 @@ def get_client(client_id):
     g.client_name = client.client_name
     g.worlds = list(enumerate(client.worlds()))
     g.summary = client.summary()
+    g.version = client.version
+    g.compatibility_hash = client.compatibility_hash
+    g.machine_id = client.machine_id
+    g.supported_network_protocols = client.supported_network_protocols
+
     return render_template("client.html")
 
 @bp.route("/<int:client_id>/session/<int:world_number>")
@@ -69,4 +74,6 @@ def get_session(client_id, world_number):
     g.status = client.status(world=world_number)
     g.users = client.users(world=world_number)
     g.session_url = client.session_url(world=world_number)
+    g.version = client.version
+
     return render_template("session.html")
