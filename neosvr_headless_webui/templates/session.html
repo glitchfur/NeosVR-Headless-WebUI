@@ -53,6 +53,19 @@
               <div class="card-tools">
                 <i class="font-weight-bold text-gray" style="position: relative; left: -4px; top: 3px;">Version {{ g.version }}</i>
                 <a class="btn btn-primary btn-sm" href="{{ g.session_url }}" role="button">Join session in Neos</a>
+                <div class="btn-group">
+                  <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Session actions
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-right">
+                    <button class="dropdown-item" data-toggle="modal" data-target="#nameModal">Edit session name</button>
+                    <button class="dropdown-item" data-toggle="modal" data-target="#descriptionModal">Edit session description</button>
+                    <button class="dropdown-item" data-toggle="modal" data-target="#accessLevelModal">Change access level</button>
+                    <button class="dropdown-item" data-toggle="modal" data-target="#hideFromListingModal">Show/hide from listing</button>
+                    <button class="dropdown-item" data-toggle="modal" data-target="#maxUsersModal">Set max user limit</button>
+                    <button class="dropdown-item" data-toggle="modal" data-target="#awayKickIntervalModal">Set away kick interval</button>
+                  </div>
+                </div>
               </div>
             </div>
             <!-- /.card-header -->
@@ -69,8 +82,8 @@
               <hr />
               <b>SessionID:</b> <code>{{ g.status["session_id"] }}</code><br />
               <b>Uptime:</b> {{ g.status["uptime"] }}<br />
-              <b>Access Level:</b> {{ g.status["access_level"] }}<br />
-              <b>Hidden from Listing:</b> <span class="badge {% if g.status.hidden_from_listing %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["hidden_from_listing"] }}</span><br />
+              <b>Access Level:</b> <a href="#accessLevelModal" data-toggle="modal">{{ g.status["access_level"] }}</a><br />
+              <b>Hidden from Listing:</b> <a href="#hideFromListingModal" data-toggle="modal"><span class="badge {% if g.status.hidden_from_listing %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["hidden_from_listing"] }}</span></a><br />
               <b>Mobile Friendly:</b> <span class="badge {% if g.status.mobile_friendly %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["mobile_friendly"] }}</span><br />
             </div>
             <!-- /.card-body -->
@@ -122,7 +135,7 @@
               {% for user in g.users[1:] %}
               <tr>
                 <td>{{ user.name }}</td>
-                <td>{{ user.role }}</td>
+                <td><a href="#roleModal" data-toggle="modal" data-username="{{ user.name }}">{{ user.role }}</a></td>
                 <td><span class="badge {% if user.present %}badge-success{% else %}badge-danger{% endif %}">{{ user.present }}</span></td>
                 <td>{{ user.ping }} ms</td>
                 <td>{{ user.fps }}</td>
@@ -147,6 +160,173 @@
 {% endblock %}
 
 {% block modals %}
+
+  <!-- Name modal -->
+  <div class="modal fade" id="nameModal" tabindex="-1" role="dialog" aria-labelledby="nameModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="nameModalLabel">Edit session name</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="nameModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/name" method="post">
+          <div class="modal-body">
+            <p>Enter the new session name below.</p>
+            <div class="form-group">
+              <input type="text" class="form-control" id="nameModalName" name="name" placeholder="Session name">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Description modal -->
+  <div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="descriptionModalLabel">Edit session description</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="descriptionModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/description" method="post">
+          <div class="modal-body">
+            <p>Enter the new session description below. Note that due to headless client limitations, line breaks will be converted to spaces.</p>
+            <div class="form-group">
+              <textarea class="form-control" id="descriptionModalDescription" name="description" placeholder="Session description" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Access level modal -->
+  <div class="modal fade" id="accessLevelModal" tabindex="-1" role="dialog" aria-labelledby="accessLevelModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="accessLevelModalLabel">Change access level</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="accessLevelModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/access_level" method="post">
+          <div class="modal-body">
+            <p>Choose a new access level from the list below.</p>
+            <div class="form-group">
+              <select class="form-control" id="accessLevelModalAccessLevel" name="access_level">
+                <option value="Private">Private</option>
+                <option value="LAN">LAN</option>
+                <option value="Friends">Friends</option>
+                <option value="FriendsOfFriends">Friends of Friends</option>
+                <option value="RegisteredUsers">Registered Users</option>
+                <option value="Anyone">Anyone</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hide from listing modal -->
+  <div class="modal fade" id="hideFromListingModal" tabindex="-1" role="dialog" aria-labelledby="hideFromListingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="hideFromListingModalLabel">Hide from listing</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="hideFromListingModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/hide_from_listing" method="post">
+          <div class="modal-body">
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="hide" id="hideFromListingModalCheck">
+                <label class="form-check-label" for="hideFromListingModalCheck">
+                  Hide this session from Neos' public world listing
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Max users modal -->
+  <div class="modal fade" id="maxUsersModal" tabindex="-1" role="dialog" aria-labelledby="maxUsersModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="maxUsersModalLabel">Set max user limit</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="maxUsersModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/max_users" method="post">
+          <div class="modal-body">
+            <p>Set the max user limit below.</p>
+            <div class="form-group">
+              <input type="number" min="1" max="256" class="form-control" id="maxUsersModalNum" name="max_users">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Away kick interval modal -->
+  <div class="modal fade" id="awayKickIntervalModal" tabindex="-1" role="dialog" aria-labelledby="awayKickIntervalModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="awayKickIntervalModalLabel">Set away kick interval</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="awayKickIntervalModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/away_kick_interval" method="post">
+          <div class="modal-body">
+            <p>Set the away kick interval (in minutes) below. Setting it to <code>-1</code> removes the limit.</p>
+            <div class="form-group">
+              <input type="number" class="form-control" id="awayKickIntervalModalNum" name="interval">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   {% if config["ENABLE_INVITE"] %}
   <!-- Invite modal -->
@@ -230,6 +410,39 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-danger">Ban</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role modal -->
+  <div class="modal fade" id="roleModal" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="roleModalLabel">Change user role</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="roleModalForm" action="/api/v1/{{ g.client_id }}/{{ g.world_number }}/role" method="post">
+          <div class="modal-body">
+            <p>Choose a new role for <b id="roleModalUsernameDisplay"></b> from the list below.</p>
+            <div class="form-group">
+              <select class="form-control" id="roleModalRole" name="role">
+                <option value="Spectator">Spectator</option>
+                <option value="Guest">Guest</option>
+                <option value="Moderator">Moderator</option>
+                <option value="Builder">Builder</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <input type="hidden" id="roleModalUsername" name="username" value="">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </form>
       </div>

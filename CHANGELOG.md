@@ -6,6 +6,10 @@
   * `/<session_id>/hide_from_listing` - Show or hide a session/world from Neos' public world listing
   * `/<session_id>/max_users` - Set the max user limit of a session/world
   * `/<session_id>/away_kick_interval` - Set the away kick interval (in minutes) of a session/world
+* A new menu has been added to session pages (in the header of the session status card) that allows for performing the following actions: Editing the session name, editing the session description, changing the session's access level, hiding the session from the public listing, setting the session's max user limit, and setting the session's away kick interval.
+* The access level of a session can also be changed by clicking its current access level in the session status card.
+* Similarly, the visibility of a session in the public listing can be changed by clicking the "True" or "False" badge displayed next to "Hidden from Listing" in the session status card.
+* The role of any connected user can now be changed by clicking on their current role in the user list.
 
 ## 2021-06-24
 * A new card has been added to client pages showing additional information about the headless client. Specifically: Neos version, compatibility hash, machine ID, and supported network protocols.
