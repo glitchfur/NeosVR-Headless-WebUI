@@ -457,8 +457,38 @@ def name(client_id, session_id):
         return api_response(exc)
     return api_response(response)
 
-# TODO: Implement `access_level` here
-# TODO: Implement `hide_from_listing` here
+@bp.route("/<int:client_id>/<int:session_id>/access_level", methods=["POST"])
+@api_login_required
+def access_level(client_id, session_id):
+    """Change the access level of the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    access_level = request.form["access_level"]
+    try:
+        response = c.access_level(access_level, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route(
+    "/<int:client_id>/<int:session_id>/hide_from_listing",
+    methods=["POST"]
+)
+@api_login_required
+def hide_from_listing(client_id, session_id):
+    """Show or hide the currently focused world from the world listing."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    hide = True if request.form["hide"] == "true" else False
+    try:
+        response = c.hide_from_listing(hide, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/description", methods=["POST"])
 @api_login_required
@@ -475,8 +505,38 @@ def description(client_id, session_id):
         return api_response(exc)
     return api_response(response)
 
-# TODO: Implement `max_users` here
-# TODO: Implement `away_kick_interval` here
+@bp.route("/<int:client_id>/<int:session_id>/max_users", methods=["POST"])
+@api_login_required
+def max_users(client_id, session_id):
+    """Set the max users allowed in the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    max_users = request.form["max_users"]
+    try:
+        response = c.max_users(max_users, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
+
+@bp.route(
+    "/<int:client_id>/<int:session_id>/away_kick_interval",
+    methods=["POST"]
+)
+@api_login_required
+def away_kick_interval(client_id, session_id):
+    """Set the away kick interval for the currently focused world."""
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    interval = request.form["interval"]
+    try:
+        response = c.away_kick_interval(interval, world=session_id)
+    except (NeosError, HeadlessNotReady) as exc:
+        return api_response(exc)
+    return api_response(response)
 
 @bp.route("/<int:client_id>/shutdown")
 @api_login_required

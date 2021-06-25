@@ -1,5 +1,12 @@
 # Changelog
 
+## 2021-06-25
+* The following API endpoints have been added, accessible at `/api/v1/<client_id>`:
+  * `/<session_id>/access_level` - Change the access level of a session/world
+  * `/<session_id>/hide_from_listing` - Show or hide a session/world from Neos' public world listing
+  * `/<session_id>/max_users` - Set the max user limit of a session/world
+  * `/<session_id>/away_kick_interval` - Set the away kick interval (in minutes) of a session/world
+
 ## 2021-06-24
 * A new card has been added to client pages showing additional information about the headless client. Specifically: Neos version, compatibility hash, machine ID, and supported network protocols.
 * The version of the headless client has been added to all session pages as well, in the header of the session status card.
