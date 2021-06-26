@@ -10,6 +10,7 @@
 * The access level of a session can also be changed by clicking its current access level in the session status card.
 * Similarly, the visibility of a session in the public listing can be changed by clicking the "True" or "False" badge displayed next to "Hidden from Listing" in the session status card.
 * The role of any connected user can now be changed by clicking on their current role in the user list.
+* Dark mode has been added, thanks to contributor **Schuyler Cebulskie (Gawdl3y)**. It can be toggled with the sun/moon icon in the top-right corner of any page.
 
 ## 2021-06-24
 * A new card has been added to client pages showing additional information about the headless client. Specifically: Neos version, compatibility hash, machine ID, and supported network protocols.
