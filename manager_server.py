@@ -13,7 +13,9 @@ from threading import Thread
 from time import sleep
 
 from rpyc import Service
-from neosvr_headless_api import RemoteHeadlessClient, HeadlessNotReady
+from neosvr_headless_api import (
+    RemoteHeadlessClient, NeosError, HeadlessNotReady
+)
 
 logging.basicConfig(
     format="[%(asctime)s][%(levelname)s] %(message)s",
@@ -98,15 +100,29 @@ class HeadlessClientInstance(RemoteHeadlessClient):
             # "worlds" command has the scope of the whole headless client and
             # doesn't need to be run per world.
             self._info["worlds"] = super().worlds()
+            # Clean up the "status" and "users" `dict`s by removing keys for
+            # worlds that no longer exist. Admittedly funky way of doing it,
+            # because "worlds" is a `list`, not a `dict`.
+            world_indexes = set(range(len(self._info["worlds"])))
+            for d in ("status", "users"):
+                remove = set(self._info[d]).difference(world_indexes)
+                for i in remove:
+                    del(self._info[d][i])
             sleep(.5)
             # "status" and "users" have the scope of a single session and so
             # need to be run per session.
-            for i in range(len(self._info["worlds"])):
-                self._info["status"][i] = super().status(world=i)
-                sleep(.5)
-                self._info["users"][i] = super().users(world=i)
-                sleep(.5)
-            # TODO: Purge old sessions.
+            for i in world_indexes:
+                try:
+                    self._info["status"][i] = super().status(world=i)
+                    sleep(.5)
+                    self._info["users"][i] = super().users(world=i)
+                    sleep(.5)
+                except NeosError:
+                    # If we got here, a world was closed after we called
+                    # `worlds()`. Don't bother running the rest of the loop
+                    # (because the index of the worlds after will have shifted)
+                    # and call `worlds()` again.
+                    break
 
     # TODO: Check whether these are completely empty. This should only occur
     # during the brief period of time between the headless client being ready
