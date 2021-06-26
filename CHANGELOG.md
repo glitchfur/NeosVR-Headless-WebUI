@@ -1,5 +1,8 @@
 # Changelog
 
+## 2021-06-26
+* Fixed a bug that caused the `/api/v1/list` API endpoint to return HTTP 500 errors in production environments.
+
 ## 2021-06-25
 * The following API endpoints have been added, accessible at `/api/v1/<client_id>`:
   * `/<session_id>/access_level` - Change the access level of a session/world

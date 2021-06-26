@@ -117,7 +117,7 @@ def start():
 @bp.route("/list")
 @api_login_required
 def list_():
-    return jsonify(list_headless_clients())
+    return jsonify(convert_netref(list_headless_clients()))
 
 @bp.route("/find_user", methods=["POST"])
 def find_user():
