@@ -1,5 +1,16 @@
 # Changelog
 
+## 2021-07-03
+* Add autostart functionality to allow the manager server to start up headless clients automatically when started.
+  * This is done with a JSON file which can be provided with the `-a` or `--autostart` parameters.
+  * The format of the JSON file should be an array of objects, containing the following five keys:
+    * `name` - The name to be given to the headless client.
+    * `host` - The hostname of the RPC server to connect to.
+    * `port` - The port to connect to the RPC server on.
+    * `neos_dir` - The directory to look in for the headless client files.
+    * `config` - The path to the configuration file to use.
+  * The headless clients will be started sequentially, and if there is more than one client, the following client will not start until the previous one has finished starting up and is ready to accept commands.
+
 ## 2021-06-26
 * Fixed a bug that caused the `/api/v1/list` API endpoint to return HTTP 500 errors in production environments.
 * Fixed a bug that caused "ghost" sessions/worlds to remain visible in the web interface after they were closed.

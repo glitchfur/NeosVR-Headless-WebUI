@@ -10,6 +10,7 @@
 import logging
 import argparse
 from threading import Thread
+from json import load
 from time import sleep
 
 from rpyc import Service
@@ -39,11 +40,21 @@ def main():
         default=16882,
         help="The TCP port to bind to. (Default: 16882)"
     )
+    parser.add_argument(
+        "-a", "--autostart",
+        help="Path to autostart JSON file."
+    )
     args = parser.parse_args()
+
+    if args.autostart:
+        with open(args.autostart) as fp:
+            autostart = load(fp)
+    else:
+        autostart = None
 
     from rpyc.utils.server import ThreadedServer
     server = ThreadedServer(
-        HeadlessClientService(),
+        HeadlessClientService(autostart=autostart),
         hostname=args.host,
         port=args.port,
         protocol_config={
@@ -175,10 +186,20 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         super().shutdown()
 
 class HeadlessClientService(Service):
-    def __init__(self):
+    def __init__(self, autostart=None):
         super().__init__()
         self.clients = {}
         self.current_id = 0
+
+        def autostart_thread():
+            for c in autostart:
+                client = self.exposed_start_headless_client(
+                    c["name"], c["host"], c["port"], c["neos_dir"], c["config"])
+                client[1].wait()
+
+        if autostart:
+            _autostart_thread = Thread(target=autostart_thread)
+            _autostart_thread.start()
 
     def exposed_start_headless_client(self, name, host, port, *args, **kwargs):
         """
