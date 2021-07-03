@@ -11,6 +11,7 @@
     * `config` - The path to the configuration file to use.
   * The headless clients will be started sequentially, and if there is more than one client, the following client will not start until the previous one has finished starting up and is ready to accept commands.
 * Updated function names to match recent changes in [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api).
+* Headless clients spawned by the manager server will now keep track of the time they were started, and the time they were last updated (in regards to the automatic polling of the `worlds`, `status`, and `users` commands).
 
 ## 2021-06-26
 * Fixed a bug that caused the `/api/v1/list` API endpoint to return HTTP 500 errors in production environments.

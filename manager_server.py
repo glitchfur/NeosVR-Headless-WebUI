@@ -11,7 +11,7 @@ import logging
 import argparse
 from threading import Thread
 from json import load
-from time import sleep
+from time import time, sleep
 
 from rpyc import Service
 from neosvr_headless_api import (
@@ -96,6 +96,12 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         super().__init__(host, port, *args, **kwargs)
         # The name of the headless client itself, not any session.
         self.client_name = name
+        self.start_time = time()
+        # The last time that the cache for `worlds`, `status`, and `users` was
+        # fully updated. The polling thread continuously updates this value. If
+        # it lags too far behind the current time, it could be an indicator that
+        # the headless client is frozen or died.
+        self.last_update = time()
         self.running = True
         # The keys of the "status" and "users" dicts will be world numbers, or
         # sessions. The values of these will again be dicts of that world's
@@ -134,6 +140,8 @@ class HeadlessClientInstance(RemoteHeadlessClient):
                     # (because the index of the worlds after will have shifted)
                     # and call `worlds()` again.
                     break
+            # Update the last time this loop completed successfully.
+            self.last_update = time()
 
     # TODO: Check whether these are completely empty. This should only occur
     # during the brief period of time between the headless client being ready
