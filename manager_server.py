@@ -106,7 +106,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
 
     def _polling_thread(self):
         # Wait for the headless client to finish starting up.
-        self.wait()
+        self.wait_for_ready()
         while self.running:
             # "worlds" command has the scope of the whole headless client and
             # doesn't need to be run per world.
@@ -140,19 +140,19 @@ class HeadlessClientInstance(RemoteHeadlessClient):
     # and these being polled for the first time.
 
     def worlds(self):
-        if not self.ready.is_set():
+        if not self.is_ready():
             raise HeadlessNotReady(NOT_READY_MESSAGE)
         return self._info["worlds"]
 
     def status(self, world):
-        if not self.ready.is_set():
+        if not self.is_ready():
             raise HeadlessNotReady(NOT_READY_MESSAGE)
         if not world in self._info["status"]:
             raise LookupError("No session with ID %d" % world)
         return self._info["status"][world]
 
     def users(self, world):
-        if not self.ready.is_set():
+        if not self.is_ready():
             raise HeadlessNotReady(NOT_READY_MESSAGE)
         if not world in self._info["users"]:
             raise LookupError("No session with ID %d" % world)
@@ -195,7 +195,7 @@ class HeadlessClientService(Service):
             for c in autostart:
                 client = self.exposed_start_headless_client(
                     c["name"], c["host"], c["port"], c["neos_dir"], c["config"])
-                client[1].wait()
+                client[1].wait_for_ready()
 
         if autostart:
             _autostart_thread = Thread(target=autostart_thread)
@@ -264,7 +264,7 @@ class HeadlessClientService(Service):
         }
         for c in self.clients:
             # Skip clients that are still starting up.
-            if not self.clients[c].ready.is_set():
+            if not self.clients[c].is_ready():
                 continue
             status["clients"] += 1
             summary = self.clients[c].summary()
@@ -304,7 +304,7 @@ class HeadlessClientService(Service):
         response = {"current": [], "present": []}
         for cid in self.clients:
             # Skip clients that are still starting up.
-            if not self.clients[cid].ready.is_set():
+            if not self.clients[cid].is_ready():
                 continue
             for sid, w in enumerate(self.clients[cid].worlds()):
                 for u in self.clients[cid].users(sid):
@@ -329,7 +329,7 @@ class HeadlessClientService(Service):
         asyncs, kicks = [], []
         for cid in self.clients:
             # Skip clients that are still starting up.
-            if not self.clients[cid].ready.is_set():
+            if not self.clients[cid].is_ready():
                 continue
             for sid, w in enumerate(self.clients[cid].worlds()):
                 asyncs.append((cid, sid, self.clients[cid].async_(
@@ -373,7 +373,7 @@ class HeadlessClientService(Service):
         async_bans, async_kicks, bans, kicks = [], [], [], []
         for cid in self.clients:
             # Skip clients that are still starting up.
-            if not self.clients[cid].ready.is_set():
+            if not self.clients[cid].is_ready():
                 continue
             async_bans.append((cid, self.clients[cid].async_(
                     self.clients[cid].ban_by_name, username

@@ -16,7 +16,7 @@ def list_headless_clients():
 
     ready_clients = {}
     for c in clients:
-        if not clients[c].ready.is_set():
+        if not clients[c].is_ready():
             continue
         ready_clients[c] = clients[c]
     return ready_clients
@@ -32,7 +32,7 @@ def get_client(client_id):
         client = conn.root.get_headless_client(client_id)
     except LookupError:
         return ("This client does not exist.", 404) # TODO: Pretty 404
-    if not client.ready.is_set():
+    if not client.is_ready():
         return ("The client is not ready yet. Try again soon.", 404)
 
     g.clients = list_headless_clients()
@@ -58,7 +58,7 @@ def get_session(client_id, world_number):
         client = conn.root.get_headless_client(client_id)
     except LookupError:
         return ("This client does not exist.", 404) # TODO: Pretty 404
-    if not client.ready.is_set():
+    if not client.is_ready():
         return ("The client is not ready yet. Try again soon.", 404)
 
     worlds = client.worlds()

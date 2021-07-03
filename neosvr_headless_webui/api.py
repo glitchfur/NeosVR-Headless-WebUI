@@ -46,7 +46,7 @@ def list_headless_clients():
     }
     for c in clients:
         # Do not show clients that are not fully started.
-        if not clients[c].ready.is_set():
+        if not clients[c].is_ready():
             continue
         response["clients"][c] = {
             "name": clients[c].client_name,

@@ -10,6 +10,7 @@
     * `neos_dir` - The directory to look in for the headless client files.
     * `config` - The path to the configuration file to use.
   * The headless clients will be started sequentially, and if there is more than one client, the following client will not start until the previous one has finished starting up and is ready to accept commands.
+* Updated function names to match recent changes in [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api).
 
 ## 2021-06-26
 * Fixed a bug that caused the `/api/v1/list` API endpoint to return HTTP 500 errors in production environments.
