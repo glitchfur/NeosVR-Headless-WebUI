@@ -1,5 +1,8 @@
 # Changelog
 
+## 2021-07-08
+* Add support for the new shutdown methods that have been implemented in [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api).
+
 ## 2021-07-03
 * Add autostart functionality to allow the manager server to start up headless clients automatically when started.
   * This is done with a JSON file which can be provided with the `-a` or `--autostart` parameters.

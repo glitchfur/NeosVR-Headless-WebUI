@@ -152,6 +152,60 @@ def ban_from_all():
     }
     return response
 
+@bp.route("/<int:client_id>/sigint", methods=["POST"])
+@api_login_required
+def sigint(client_id):
+    """Send a `SIGINT` signal to the headless client."""
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    # TODO: Implement timeout
+    exit_code = conn.root.send_signal_headless_client(client_id, 2)
+    return {"success": True, "exit_code": exit_code}
+
+@bp.route("/<int:client_id>/terminate", methods=["POST"])
+@api_login_required
+def terminate(client_id):
+    """Send a `SIGTERM` signal to the headless client."""
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    # TODO: Implement timeout
+    exit_code = conn.root.send_signal_headless_client(client_id, 15)
+    return {"success": True, "exit_code": exit_code}
+
+@bp.route("/<int:client_id>/kill", methods=["POST"])
+@api_login_required
+def kill(client_id):
+    """Send a `SIGKILL` signal to the headless client."""
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    # TODO: Implement timeout
+    exit_code = conn.root.send_signal_headless_client(client_id, 9)
+    return {"success": True, "exit_code": exit_code}
+
+@bp.route("/<int:client_id>/restart_client", methods=["POST"])
+@api_login_required
+def restart_client(client_id):
+    """
+    Attempts to restart a headless client "in-place", by killing the currently
+    running one and spawning a new one with the same configuration.
+    """
+    conn = connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+    )
+    client = conn.root.get_headless_client(client_id)
+    name = client.client_name
+    host = client.host
+    port = client.port
+    neos_dir = client.neos_dir
+    config = client.config
+    conn.root.send_signal_headless_client(client_id, 15)
+    new_client = conn.root.start_headless_client(
+        name, host, port, neos_dir, config=config)
+    return {"success": True, "client_id": new_client[0]}
+
 # START HEADLESS COMMANDS
 
 # TODO: Implement `login` here

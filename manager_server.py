@@ -247,6 +247,40 @@ class HeadlessClientService(Service):
         logging.info("Total clients running: %d" % len(self.clients))
         return exit_code
 
+    def exposed_send_signal_headless_client(self, cid, sig):
+        """
+        Send a signal to the `HeadlessClientInstance` with the given `cid` and
+        removes it from the client list. `sig` is an integer which can be either
+        SIGINT (2), SIGTERM (15), or SIGKILL (9). If `sig` is not one of these
+        integers, `ValueError` will be raised. Returns the signal used to
+        terminate the client as a negative integer.
+        """
+        if not cid in self.clients:
+            raise LookupError("No headless client with ID %d" % cid)
+        client = self.clients[cid]
+        client.running = False
+        # Wait for polling thread to stop.
+        client._polling_thread.join()
+        if not sig in (2, 9, 15):
+            # TODO: Handle this
+            raise ValueError("Signal not allowed: %d" % sig)
+        if sig == 2:
+            func = client.sigint
+        elif sig == 9:
+            func = client.kill
+        elif sig == 15:
+            func = client.terminate
+        exit_code = func()
+        # TODO: The following code is identical to that of
+        # `exposed_stop_headless_client()`
+        del(self.clients[cid])
+        logging.info(
+            "Headless client with ID %d terminated with return code %d." %
+            (cid, exit_code)
+        )
+        logging.info("Total clients running: %d" % len(self.clients))
+        return exit_code
+
     def exposed_get_headless_client(self, cid):
         """Returns an existing `HeadlessClientInstance` with the given `cid`."""
         if not cid in self.clients:
