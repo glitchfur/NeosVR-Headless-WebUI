@@ -106,7 +106,12 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         # The keys of the "status" and "users" dicts will be world numbers, or
         # sessions. The values of these will again be dicts of that world's
         # respective status and list of users.
-        self._info = {"status": {}, "users": {}}
+        self._info = {
+            "status": {},
+            "users": {},
+            "session_id": {},
+            "session_url": {}
+        }
         self._polling_thread = Thread(target=self._polling_thread)
         self._polling_thread.start()
 
@@ -121,7 +126,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
             # worlds that no longer exist. Admittedly funky way of doing it,
             # because "worlds" is a `list`, not a `dict`.
             world_indexes = set(range(len(self._info["worlds"])))
-            for d in ("status", "users"):
+            for d in ("status", "users", "session_id", "session_url"):
                 remove = set(self._info[d]).difference(world_indexes)
                 for i in remove:
                     del(self._info[d][i])
@@ -130,10 +135,19 @@ class HeadlessClientInstance(RemoteHeadlessClient):
             # need to be run per session.
             for i in world_indexes:
                 try:
-                    self._info["status"][i] = super().status(world=i)
+                    status = super().status(world=i)
+                    self._info["status"][i] = status
+                    # Session IDs don't change, no need to update over and over.
+                    if not i in self._info["session_id"]:
+                        self._info["session_id"][i] = status["session_id"]
                     sleep(.5)
                     self._info["users"][i] = super().users(world=i)
                     sleep(.5)
+                    # Same comment as above, but for session URLs.
+                    if not i in self._info["session_url"]:
+                        self._info["session_url"][i] = \
+                            super().session_url(world=i)
+                        sleep(.5)
                 except NeosError:
                     # If we got here, a world was closed after we called
                     # `worlds()`. Don't bother running the rest of the loop
@@ -146,6 +160,8 @@ class HeadlessClientInstance(RemoteHeadlessClient):
     # TODO: Check whether these are completely empty. This should only occur
     # during the brief period of time between the headless client being ready
     # and these being polled for the first time.
+
+    # TODO: Eliminate some redundancy here.
 
     def worlds(self):
         if not self.is_ready():
@@ -165,6 +181,20 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         if not world in self._info["users"]:
             raise LookupError("No session with ID %d" % world)
         return self._info["users"][world]
+
+    def session_id(self, world):
+        if not self.is_ready():
+            raise HeadlessNotReady(NOT_READY_MESSAGE)
+        if not world in self._info["session_id"]:
+            raise LookupError("No session with ID %d" % world)
+        return self._info["session_id"][world]
+
+    def session_url(self, world):
+        if not self.is_ready():
+            raise HeadlessNotReady(NOT_READY_MESSAGE)
+        if not world in self._info["session_url"]:
+            raise LookupError("No session with ID %d" % world)
+        return self._info["session_url"][world]
 
     def summary(self):
         """
