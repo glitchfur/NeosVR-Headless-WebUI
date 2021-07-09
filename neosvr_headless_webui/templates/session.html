@@ -25,6 +25,15 @@
 
   <div class="row">
     <div class="col-lg-6">
+
+      <div class="row">
+        <div class="col-lg-12">
+          {% if g.state[0] == "not_responding" %}
+            <div class="alert alert-danger">This server is not responding to commands, and the information you see here may be outdated. All actions have been disabled. You can try to <a href="#restartClientModal" data-toggle="modal">restart</a> it in-place, or you can <a href="#killClientModal" data-toggle="modal">kill</a> it if you no longer need it, but manually check if the sessions are empty before performing either of these actions.</div>
+          {% endif %}
+        </div>
+      </div>
+
       <div class="row">
         <div class="col-lg-6">
           <div class="info-box bg-primary">
@@ -53,6 +62,7 @@
               <div class="card-tools">
                 <i class="font-weight-bold text-gray" style="position: relative; left: -4px; top: 3px;">Version {{ g.version }}</i>
                 <a class="btn btn-primary btn-sm" href="{{ g.session_url }}" role="button">Join session in Neos</a>
+                {% if g.state[0] == "running" %}
                 <div class="btn-group">
                   <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Session actions
@@ -66,6 +76,7 @@
                     <button class="dropdown-item" data-toggle="modal" data-target="#awayKickIntervalModal">Set away kick interval</button>
                   </div>
                 </div>
+                {% endif %}
               </div>
             </div>
             <!-- /.card-header -->
@@ -82,8 +93,13 @@
               <hr />
               <b>SessionID:</b> <code>{{ g.status["session_id"] }}</code><br />
               <b>Uptime:</b> {{ g.status["uptime"] }}<br />
-              <b>Access Level:</b> <a href="#accessLevelModal" data-toggle="modal">{{ g.status["access_level"] }}</a><br />
-              <b>Hidden from Listing:</b> <a href="#hideFromListingModal" data-toggle="modal"><span class="badge {% if g.status.hidden_from_listing %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["hidden_from_listing"] }}</span></a><br />
+              {% if g.state[0] == "running" %}
+                <b>Access Level:</b> <a href="#accessLevelModal" data-toggle="modal">{{ g.status["access_level"] }}</a><br />
+                <b>Hidden from Listing:</b> <a href="#hideFromListingModal" data-toggle="modal"><span class="badge {% if g.status.hidden_from_listing %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["hidden_from_listing"] }}</span></a><br />
+              {% else %}
+                <b>Access Level:</b> {{ g.status["access_level"] }}<br />
+                <b>Hidden from Listing:</b> <span class="badge {% if g.status.hidden_from_listing %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["hidden_from_listing"] }}</span><br />
+              {% endif %}
               <b>Mobile Friendly:</b> <span class="badge {% if g.status.mobile_friendly %}badge-success{% else %}badge-danger{% endif %}">{{ g.status["mobile_friendly"] }}</span><br />
             </div>
             <!-- /.card-body -->
@@ -98,6 +114,7 @@
       <div class="card">
         <div class="card-header">
           <h3 class="card-title" style="position: relative; top: 5px;">User list</h3>
+          {% if g.state[0] == "running" %}
           <div class="card-tools">
             {% if config["ENABLE_INVITE"] %}
               <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteModal">Invite</button>
@@ -105,6 +122,7 @@
             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#kickByNameModal">Kick By Name</button>
             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#banByNameModal">Ban By Name</button>
           </div>
+          {% endif %}
         </div>
         <div class="card-body p-0">
           <table class="table table-striped">
@@ -135,16 +153,22 @@
               {% for user in g.users[1:] %}
               <tr>
                 <td>{{ user.name }}</td>
-                <td><a href="#roleModal" data-toggle="modal" data-username="{{ user.name }}">{{ user.role }}</a></td>
+                {% if g.state[0] == "running" %}
+                  <td><a href="#roleModal" data-toggle="modal" data-username="{{ user.name }}">{{ user.role }}</a></td>
+                {% else %}
+                  <td>{{ user.role }}</td>
+                {% endif %}
                 <td><span class="badge {% if user.present %}badge-success{% else %}badge-danger{% endif %}">{{ user.present }}</span></td>
                 <td>{{ user.ping }} ms</td>
                 <td>{{ user.fps }}</td>
                 <td>
+                  {% if g.state[0] == "running" %}
                   {% if config["ENABLE_MESSAGE"] %}
                     <button class="btn btn-info btn-xs" data-toggle="modal" data-target="#messageModal" data-username="{{ user.name }}"><b>Message</b></button>
                   {% endif %}
                   <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#kickModal" data-username="{{ user.name }}"><b>Kick</b></button>
                   <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#banModal" data-username="{{ user.name }}"><b>Ban</b></button>
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -537,6 +561,54 @@
       </div>
     </div>
   </div>
+
+{% if g.state[0] == "not_responding" %}
+  <!-- Restart modal -->
+  <div class="modal fade" id="restartClientModal" tabindex="-1" role="dialog" aria-labelledby="restartClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="restartClientModalLabel">Restart server</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="restartClientModalForm" action="/api/v1/{{ g.client_id }}/restart_client" method="post">
+          <div class="modal-body">
+            Are you sure you want to restart this server?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning" value="restart">Restart</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kill modal -->
+  <div class="modal fade" id="killClientModal" tabindex="-1" role="dialog" aria-labelledby="killClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="killClientModalLabel">Kill server</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="killClientModalForm" action="/api/v1/{{ g.client_id }}/terminate" method="post">
+          <div class="modal-body">
+            Are you sure you want to kill this server?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger" value="restart">Kill</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
 
 {% endblock %}
 

@@ -39,6 +39,7 @@ def get_client(client_id):
     g.client_id = client_id
     g.client_name = client.client_name
     g.worlds = list(enumerate(client.worlds()))
+    g.state = client.get_state()
     g.summary = client.summary()
     g.version = client.version
     g.compatibility_hash = client.compatibility_hash
@@ -71,6 +72,7 @@ def get_session(client_id, world_number):
     g.world_number = world_number
     g.client_name = client.client_name
     g.worlds = list(enumerate(worlds))
+    g.state = client.get_state()
     g.status = client.status(world=world_number)
     g.users = client.users(world=world_number)
     g.session_url = client.session_url(world=world_number)

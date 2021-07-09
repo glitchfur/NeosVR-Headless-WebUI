@@ -93,24 +93,115 @@
 
   <div class="row">
     {% for c in g.clients %}
-    {% set summary = g.clients[c].summary() %}
-    <div class="col-xl-3 col-md-4 col-sm-6">
-      <a href="/client/{{ c }}">
-        <div class="info-box bg-info">
-          <span class="info-box-icon"><i class="fas fa-server"></i></span>
-          <div class="info-box-content">
-            <span class="info-box-text">{{ g.clients[c].client_name }}</span>
-            <span class="info-box-number">{{ summary["sessions"] }} session(s) running<br />{{ summary["current_users"] }} user(s) connected, {{ summary["present_users"] }} present</span>
-            <div class="progress">
-              {% set progress_width = summary["current_users"]/summary["max_users"]*100 %}
-              <div class="progress-bar" style="width: {{ progress_width }}%"></div>
+      {% set state = g.clients[c].get_state() %}
+      {% if state[0] == "running" %}
+        {% set summary = g.clients[c].summary() %}
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <a href="/client/{{ c }}">
+            <div class="info-box bg-success">
+              <span class="info-box-icon"><i class="fas fa-server"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">{{ g.clients[c].client_name }}</span>
+                <span class="info-box-number">{{ summary["sessions"] }} session(s) running<br />{{ summary["current_users"] }} user(s) connected, {{ summary["present_users"] }} present</span>
+                <div class="progress">
+                  {% set progress_width = summary["current_users"]/summary["max_users"]*100 %}
+                  <div class="progress-bar" style="width: {{ progress_width }}%"></div>
+                </div>
+                <span class="progress-description">Max capacity is {{ summary["max_users"] }} user(s)</span>
+              </div>
             </div>
-            <span class="progress-description">Max capacity is {{ summary["max_users"] }} user(s)</span>
+          </a>
+        </div>
+      {% elif state[0] == "not_responding" %}
+        {% set summary = g.clients[c].summary() %}
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <a href="/client/{{ c }}">
+            <div class="info-box bg-danger">
+              <span class="info-box-icon"><i class="fas fa-server"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">{{ g.clients[c].client_name }}
+                  <span data-toggle="tooltip" data-placement="bottom"
+                    title="This server is not responding to commands. Click for more info.">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </span>
+                </span>
+                <span class="info-box-number">{{ summary["sessions"] }} session(s) running<br />{{ summary["current_users"] }} user(s) connected, {{ summary["present_users"] }} present</span>
+                <div class="progress">
+                  {% set progress_width = summary["current_users"]/summary["max_users"]*100 %}
+                  <div class="progress-bar" style="width: {{ progress_width }}%"></div>
+                </div>
+                <span class="progress-description">This server is not responding.</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% elif state[0] == "starting" %}
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <div class="info-box bg-warning">
+            <span class="info-box-icon"><i class="fas fa-server"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">{{ g.clients[c].client_name }}</span>
+              <span class="info-box-number">This server is starting up.</span>
+              <div class="progress">
+                <div class="progress-bar" style="width: {{ progress_width }}%"></div>
+              </div>
+              <span class="progress-description">Starting for {{ state[1] }} second(s) ...</span>
+            </div>
           </div>
         </div>
-      </a>
-    </div>
+      {% elif state[0] == "stuck_starting" %}
+        <div class="col-xl-3 col-md-4 col-sm-6">
+          <a href="#restartClientModal" data-toggle="modal" data-clientid="{{ c }}">
+            <div class="info-box bg-danger">
+              <span class="info-box-icon"><i class="fas fa-server"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">{{ g.clients[c].client_name }}
+                  <span data-toggle="tooltip" data-placement="bottom"
+                    title="This server has been starting for over a minute, potentially due to errors. Click for more info.">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </span>
+                </span>
+                <span class="info-box-number">This server is taking too long to start.</span>
+                <div class="progress">
+                  <div class="progress-bar" style="width: {{ progress_width }}%"></div>
+                </div>
+                <span class="progress-description">Starting for {{ state[1] }} second(s) ...</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endif %}
     {% endfor %}
+  </div>
+
+{% endblock %}
+
+{% block modals %}
+
+  <!-- Restart or kill client modal -->
+  <div class="modal fade" id="restartClientModal" tabindex="-1" role="dialog" aria-labelledby="restartClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="restartClientModalLabel">Restart or kill server</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="restartClientModalForm" method="post">
+          <div class="modal-body">
+            <p>Headless servers can sometimes fail to start, either due to an erroneous configuration or a temporary glitch in startup. Please check your configuration for possible problems, such as a bad Neos username/password. If you are certain your configuration is correct, simply restarting the server will resolve the issue in most cases.</p>
+            <p>Please select an action using the buttons below.</p>
+            <input type="hidden" id="restartClientModalClientID" name="client_id" value="">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning" value="restart">Restart</button>
+            <button type="submit" class="btn btn-danger" value="kill">Kill</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
 {% endblock %}
@@ -122,5 +213,7 @@
     $('[data-toggle="tooltip"]').tooltip()
   })
 </script>
+
+<script src="/static/js/dashboard.js"></script>
 
 {% endblock %}

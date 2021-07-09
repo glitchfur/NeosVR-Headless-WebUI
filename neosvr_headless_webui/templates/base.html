@@ -117,7 +117,7 @@
             </li>
           {% endfor %}
           <li class="nav-header">SERVERS</li>
-          {% for c in g.clients %}
+          {% for c in g.clients if g.clients[c].is_ready() %}
             <li class="nav-item{% if request.path.startswith('/client/%d' % c) %} menu-open{% endif %}">
               <a href="#" class="nav-link{% if request.path.startswith('/client/%d' % c) %} active{% endif %}">
                 <i class="fas fa-server nav-icon"></i>

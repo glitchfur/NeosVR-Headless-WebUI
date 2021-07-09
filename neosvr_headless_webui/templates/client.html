@@ -31,6 +31,10 @@
 
         <div class="col-xl-12">
 
+          {% if g.state[0] == "not_responding" %}
+            <div class="alert alert-danger">This server is not responding to commands, and the information you see here may be outdated. You can try to <a href="#restartClientModal" data-toggle="modal">restart</a> it in-place, or you can <a href="#killClientModal" data-toggle="modal">kill</a> it if you no longer need it, but manually check if the sessions are empty before performing either of these actions.</div>
+          {% endif %}
+
           <div class="card">
             <div class="card-body">
               Switch between sessions on this server using the buttons above. The table to the side/below offers a quick overview of the sessions that are currently running. The stats below relate only to this specific server. For an overview of all servers, go back to the <a href="/dashboard">dashboard</a>.
@@ -142,5 +146,63 @@
     </div>
 
   </div>
+
+{% endblock %}
+
+{% block modals %}
+
+{% if g.state[0] == "not_responding" %}
+  <!-- Restart modal -->
+  <div class="modal fade" id="restartClientModal" tabindex="-1" role="dialog" aria-labelledby="restartClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="restartClientModalLabel">Restart server</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="restartClientModalForm" action="/api/v1/{{ g.client_id }}/restart_client" method="post">
+          <div class="modal-body">
+            Are you sure you want to restart this server?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-warning" value="restart">Restart</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kill modal -->
+  <div class="modal fade" id="killClientModal" tabindex="-1" role="dialog" aria-labelledby="killClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="killClientModalLabel">Kill server</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="killClientModalForm" action="/api/v1/{{ g.client_id }}/terminate" method="post">
+          <div class="modal-body">
+            Are you sure you want to kill this server?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger" value="restart">Kill</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="/static/js/client.js"></script>
 
 {% endblock %}

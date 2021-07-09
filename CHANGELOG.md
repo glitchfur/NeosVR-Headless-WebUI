@@ -1,5 +1,10 @@
 # Changelog
 
+## 2021-07-09
+* Headless clients will now show their status on the dashboard: Whether they are starting, stuck starting, running, or not responding.
+  * Clients will change their color depending on their status.
+  * For clients in states that are irrecoverable (stuck starting or not responding) options will be provided to restart the client in-place or kill it.
+
 ## 2021-07-08
 * Add support for the new shutdown methods that have been implemented in [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api).
 * Session IDs and URLs are now cached by `HeadlessClientInstance` as these are static values which shouldn't change for the lifetime of a session, so there is no need to run the command to get those values repeatedly.

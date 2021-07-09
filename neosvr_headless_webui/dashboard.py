@@ -11,14 +11,9 @@ def dashboard():
     conn = connect(
         current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
     )
-    clients = conn.root.list_headless_clients()
-
-    # Filter out clients that are not ready yet.
-    g.clients = {}
-    for c in clients:
-        if not clients[c].ready.is_set():
-            continue
-        g.clients[c] = clients[c]
-
+    g.clients = conn.root.list_headless_clients()
+    g.clients_states = {}
+    for c in g.clients:
+        g.clients_states[c] = g.clients[c].get_state()
     g.status = conn.root.get_manager_status()
     return render_template("dashboard.html")

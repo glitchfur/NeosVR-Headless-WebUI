@@ -116,8 +116,13 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         self._polling_thread.start()
 
     def _polling_thread(self):
-        # Wait for the headless client to finish starting up.
-        self.wait_for_ready()
+        # Wait for the headless client to finish starting up. This is looped so
+        # that it doesn't block indefinitely and allows for a chance to abort in
+        # case the headless client never fully starts.
+        while self.running:
+            ready = self.wait_for_ready(timeout=.5)
+            if ready:
+                break
         while self.running:
             # "worlds" command has the scope of the whole headless client and
             # doesn't need to be run per world.
@@ -156,6 +161,35 @@ class HeadlessClientInstance(RemoteHeadlessClient):
                     break
             # Update the last time this loop completed successfully.
             self.last_update = time()
+
+    def get_state(self):
+        """
+        Get the current "state" of the headless client as a tuple, consisting of
+        two parts: A string, and a number of seconds. There are four possible
+        values:
+
+        * ("starting", <int>) - The headless client is starting, and <int> is
+          the number of seconds the client has been starting for.
+        * ("stuck_starting", <int>) - The headless client has been starting for
+          over a minute and may be stuck. <int> is the number of seconds the
+          client has been starting for.
+        * ("running", <int>) - The headless client is running normally and is
+          ready to accept commands. <int> is the number of seconds the client
+          has been running for.
+        * ("not_responding", <int>) - The headless client hasn't responded to a
+          command for over 20 seconds. <int> is the number of seconds since the
+          last time the client responded to a command.
+        """
+        ct = time()
+        if not self.is_ready():
+            sd = int(ct - self.start_time)
+            if sd > 60:
+                return ("stuck_starting", sd)
+            return ("starting", sd)
+        ud = int(ct - self.last_update)
+        if ud > 20:
+            return ("not_responding", ud)
+        return ("running", ct - self.start_time)
 
     # TODO: Check whether these are completely empty. This should only occur
     # during the brief period of time between the headless client being ready
@@ -233,7 +267,9 @@ class HeadlessClientService(Service):
             for c in autostart:
                 client = self.exposed_start_headless_client(
                     c["name"], c["host"], c["port"], c["neos_dir"], c["config"])
-                client[1].wait_for_ready()
+                # Start each headless client immediately after the previous one
+                # is ready, or wait up to 30 seconds. Whichever comes first.
+                client[1].wait_for_ready(timeout=30)
 
         if autostart:
             _autostart_thread = Thread(target=autostart_thread)
