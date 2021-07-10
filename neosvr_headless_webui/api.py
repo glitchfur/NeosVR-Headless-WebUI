@@ -13,31 +13,33 @@ bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
 # TODO: Use different HTTP codes for errors?
 
-def start_headless_client(*args, **kwargs):
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
+# Maximum time to wait for RPC responses (in seconds)
+SYNC_REQUEST_TIMEOUT = 60
+
+def connect_manager():
+    """Returns an RPC connection to the manager server."""
+    return connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"],
+        config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT}
     )
+
+def start_headless_client(*args, **kwargs):
+    conn = connect_manager()
     client = conn.root.start_headless_client(*args, **kwargs)
     return client
 
 def stop_headless_client(client_id):
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     exit_code = conn.root.stop_headless_client(client_id)
     return exit_code
 
 def get_headless_client(client_id):
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     client = conn.root.get_headless_client(client_id)
     return client
 
 def list_headless_clients():
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     clients = conn.root.list_headless_clients()
     status = conn.root.get_manager_status()
     response = {
@@ -121,27 +123,21 @@ def list_():
 
 @bp.route("/find_user", methods=["POST"])
 def find_user():
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     user = request.form["username"]
     found_list = convert_netref(conn.root.find_user(user))
     return {"username": user, "sessions": found_list}
 
 @bp.route("/kick_from_all", methods=["POST"])
 def kick_from_all():
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     user = request.form["username"]
     kick_list = convert_netref(conn.root.kick_from_all(user))
     return {"username": user, "kicks": kick_list}
 
 @bp.route("/ban_from_all", methods=["POST"])
 def ban_from_all():
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     user = request.form["username"]
     kick = True if request.form["kick"] == "true" else False
     ban_kick_list = convert_netref(conn.root.ban_from_all(user, kick=kick))
@@ -156,9 +152,7 @@ def ban_from_all():
 @api_login_required
 def sigint(client_id):
     """Send a `SIGINT` signal to the headless client."""
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     # TODO: Implement timeout
     exit_code = conn.root.send_signal_headless_client(client_id, 2)
     return {"success": True, "exit_code": exit_code}
@@ -167,9 +161,7 @@ def sigint(client_id):
 @api_login_required
 def terminate(client_id):
     """Send a `SIGTERM` signal to the headless client."""
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     # TODO: Implement timeout
     exit_code = conn.root.send_signal_headless_client(client_id, 15)
     return {"success": True, "exit_code": exit_code}
@@ -178,9 +170,7 @@ def terminate(client_id):
 @api_login_required
 def kill(client_id):
     """Send a `SIGKILL` signal to the headless client."""
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     # TODO: Implement timeout
     exit_code = conn.root.send_signal_headless_client(client_id, 9)
     return {"success": True, "exit_code": exit_code}
@@ -192,9 +182,7 @@ def restart_client(client_id):
     Attempts to restart a headless client "in-place", by killing the currently
     running one and spawning a new one with the same configuration.
     """
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     client = conn.root.get_headless_client(client_id)
     name = client.client_name
     host = client.host

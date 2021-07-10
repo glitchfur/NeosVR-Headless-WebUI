@@ -5,13 +5,21 @@ from rpyc import connect
 
 bp = Blueprint("client", __name__, url_prefix="/client")
 
+# Maximum time to wait for RPC responses (in seconds)
+SYNC_REQUEST_TIMEOUT = 60
+
+def connect_manager():
+    """Returns an RPC connection to the manager server."""
+    return connect(
+        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"],
+        config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT}
+    )
+
 def list_headless_clients():
     """Lists headless clients that are currently running and ready."""
     # TODO: This code is duplicated in `dashboard.py`.
     # Could be cleaned up a little.
-    conn = connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     clients = conn.root.list_headless_clients()
 
     ready_clients = {}
@@ -24,10 +32,7 @@ def list_headless_clients():
 @bp.route("/<int:client_id>")
 @login_required
 def get_client(client_id):
-    conn = connect(
-        current_app.config["MANAGER_HOST"],
-        current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     try:
         client = conn.root.get_headless_client(client_id)
     except LookupError:
@@ -51,10 +56,7 @@ def get_client(client_id):
 @bp.route("/<int:client_id>/session/<int:world_number>")
 @login_required
 def get_session(client_id, world_number):
-    conn = connect(
-        current_app.config["MANAGER_HOST"],
-        current_app.config["MANAGER_PORT"]
-    )
+    conn = connect_manager()
     try:
         client = conn.root.get_headless_client(client_id)
     except LookupError:

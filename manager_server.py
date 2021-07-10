@@ -176,9 +176,9 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         * ("running", <int>) - The headless client is running normally and is
           ready to accept commands. <int> is the number of seconds the client
           has been running for.
-        * ("not_responding", <int>) - The headless client hasn't responded to a
-          command for over 20 seconds. <int> is the number of seconds since the
-          last time the client responded to a command.
+        * ("not_responding", <int>) - The headless client hasn't completed its
+          polling loop for over 45 seconds. <int> is the number of seconds since
+          the last time the loop completed a full cycle.
         """
         ct = time()
         if not self.is_ready():
@@ -187,7 +187,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
                 return ("stuck_starting", sd)
             return ("starting", sd)
         ud = int(ct - self.last_update)
-        if ud > 20:
+        if ud > 45:
             return ("not_responding", ud)
         return ("running", ct - self.start_time)
 
