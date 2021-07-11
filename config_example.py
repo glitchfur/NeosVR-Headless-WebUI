@@ -8,6 +8,9 @@ APP_NAME = "Event Name"
 # folder. The image must be a PNG image. Image size should ideally be 256x256 or
 # less as it will be scaled down.
 APP_LOGO = "logo.png"
+# Logging file path, used for logging actions by users.
+# If left a blank string, no logging to a file will occur.
+LOG_FILE = ""
 # Secret key used for encrypting session cookies.
 # A secure random key can be generated like this:
 # python -c 'import os; print(os.urandom(16))'

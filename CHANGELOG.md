@@ -4,6 +4,7 @@
 * Relaxed timeouts for server response checks and RPC connections:
   * Servers will now appear on the dashboard as "unresponsive" if the polling loop hasn't completed in over 45 seconds. (Changed from 30 seconds.)
   * RPC connections now have a 60 second timeout. (Changed from 30 seconds.)
+* Added logging capabilities, which logs what users performed which actions on which headless clients and sessions. You can specify where this log file is written to in `config.py`. By default, no log file is written.
 
 ## 2021-07-09
 * Headless clients will now show their status on the dashboard: Whether they are starting, stuck starting, running, or not responding.

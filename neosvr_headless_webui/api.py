@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, session
 from .auth import api_login_required
 
 from rpyc import connect, core
@@ -22,6 +22,19 @@ def connect_manager():
         current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"],
         config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT}
     )
+
+def log_user_action(msg, cmd=None):
+    """
+    Write an action to the log file, prepending the message with the initiating
+    user's username. If `cmd` is specified, it is added to the log message,
+    indicating that it was the effective headless client console command ran.
+    """
+    if cmd:
+        return current_app.logger.info("(User: %s, Command: %s) %s" % \
+            (session["user"]["username"], cmd, msg))
+    else:
+        return current_app.logger.info("(User: %s) %s" % \
+            (session["user"]["username"], msg))
 
 def start_headless_client(*args, **kwargs):
     conn = connect_manager()
@@ -109,6 +122,7 @@ def start():
     Starts a headless client. Data should be submitted as a URL encoded form.
     Required parameters are `name`, `host`, `port`, and `neos_dir`.
     """
+    log_user_action("Initiated headless client start")
     name = request.form["name"]
     host, port = request.form["host"], request.form["port"]
     neos_dir = request.form["neos_dir"]
@@ -132,6 +146,7 @@ def find_user():
 def kick_from_all():
     conn = connect_manager()
     user = request.form["username"]
+    log_user_action("Initiated kick of user \"%s\" from all sessions" % user)
     kick_list = convert_netref(conn.root.kick_from_all(user))
     return {"username": user, "kicks": kick_list}
 
@@ -139,6 +154,7 @@ def kick_from_all():
 def ban_from_all():
     conn = connect_manager()
     user = request.form["username"]
+    log_user_action("Initiated ban of user \"%s\" from all sessions" % user)
     kick = True if request.form["kick"] == "true" else False
     ban_kick_list = convert_netref(conn.root.ban_from_all(user, kick=kick))
     response = {
@@ -152,6 +168,8 @@ def ban_from_all():
 @api_login_required
 def sigint(client_id):
     """Send a `SIGINT` signal to the headless client."""
+    log_user_action(
+        "Initiated SIGINT (2) of headless client with ID %d" % client_id)
     conn = connect_manager()
     # TODO: Implement timeout
     exit_code = conn.root.send_signal_headless_client(client_id, 2)
@@ -161,6 +179,8 @@ def sigint(client_id):
 @api_login_required
 def terminate(client_id):
     """Send a `SIGTERM` signal to the headless client."""
+    log_user_action(
+        "Initiated SIGTERM (15) of headless client with ID %d" % client_id)
     conn = connect_manager()
     # TODO: Implement timeout
     exit_code = conn.root.send_signal_headless_client(client_id, 15)
@@ -170,6 +190,8 @@ def terminate(client_id):
 @api_login_required
 def kill(client_id):
     """Send a `SIGKILL` signal to the headless client."""
+    log_user_action(
+        "Initiated SIGKILL (9) of headless client with ID %d" % client_id)
     conn = connect_manager()
     # TODO: Implement timeout
     exit_code = conn.root.send_signal_headless_client(client_id, 9)
@@ -182,6 +204,7 @@ def restart_client(client_id):
     Attempts to restart a headless client "in-place", by killing the currently
     running one and spawning a new one with the same configuration.
     """
+    log_user_action("Restarting headless client with ID %d" % client_id)
     conn = connect_manager()
     client = conn.root.get_headless_client(client_id)
     name = client.client_name
@@ -225,6 +248,8 @@ def invite(client_id, session_id):
         response = c.invite(user, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Invited user \"%s\" to client ID %d, session ID %d" %
+        (user, client_id, session_id), cmd="invite")
     return api_response(response)
 
 # TODO: Implement `friend_requests` here
@@ -312,6 +337,8 @@ def close(client_id, session_id):
         response = c.close(world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Session with ID %d closed on client ID %d" %
+        (session_id, client_id), cmd="close")
     return api_response(response)
 
 # TODO: Implement `save` here
@@ -330,6 +357,8 @@ def kick(client_id, session_id):
         response = c.kick(user, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Kicked user \"%s\" from client ID %d, session ID %d" %
+        (user, client_id, session_id), cmd="kick")
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/silence", methods=["POST"])
@@ -345,6 +374,8 @@ def silence(client_id, session_id):
         response = c.silence(user, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Silenced user \"%s\" in client ID %d, session ID %d" %
+        (user, client_id, session_id), cmd="silence")
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/unsilence", methods=["POST"])
@@ -360,6 +391,8 @@ def unsilence(client_id, session_id):
         response = c.unsilence(user, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Unsilenced user \"%s\" in client ID %d, session ID %d" %
+        (user, client_id, session_id), cmd="unsilence")
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/ban", methods=["POST"])
@@ -375,6 +408,8 @@ def ban(client_id, session_id):
         response = c.ban(user, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Banned user \"%s\" in client ID %d, session ID %d" %
+        (user, client_id, session_id), cmd="ban")
     return api_response(response)
 
 @bp.route("/<int:client_id>/unban", methods=["POST"])
@@ -390,6 +425,8 @@ def unban(client_id):
         response = c.unban(user)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Unbanned user \"%s\" from client ID %d" %
+        (user, client_id), cmd="unban")
     return api_response(response)
 
 @bp.route("/<int:client_id>/list_bans")
@@ -419,6 +456,8 @@ def ban_by_name(client_id):
         response = c.ban_by_name(user)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Banned user \"%s\" by name from client ID %d" %
+        (user, client_id), cmd="banByName")
     return api_response(response)
 
 @bp.route("/<int:client_id>/unban_by_name", methods=["POST"])
@@ -434,6 +473,8 @@ def unban_by_name(client_id):
         response = c.unban_by_name(user)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Unbanned user \"%s\" by name from client ID %d" %
+        (user, client_id), cmd="unbanByName")
     return api_response(response)
 
 @bp.route("/<int:client_id>/ban_by_id", methods=["POST"])
@@ -449,6 +490,8 @@ def ban_by_id(client_id):
         response = c.ban_by_id(user_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Banned user ID \"%s\" from client ID %d" %
+        (user_id, client_id), cmd="banByID")
     return api_response(response)
 
 @bp.route("/<int:client_id>/unban_by_id", methods=["POST"])
@@ -464,6 +507,8 @@ def unban_by_id(client_id):
         response = c.unban_by_id(user_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Unbanned user ID \"%s\" from client ID %d" %
+        (user_id, client_id), cmd="unbanByID")
     return api_response(response)
 
 # TODO: Implement `respawn` here
@@ -482,6 +527,10 @@ def role(client_id, session_id):
         response = c.role(user, role, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action(
+        "Changed role of \"%s\" to %s in client ID %d, session ID %d" %
+        (user, role, client_id, session_id), cmd="role"
+    )
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/name", methods=["POST"])
@@ -497,6 +546,8 @@ def name(client_id, session_id):
         response = c.name(name, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Changed name client ID %d, session ID %d to \"%s\"" %
+        (client_id, session_id, name), cmd="name")
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/access_level", methods=["POST"])
@@ -512,6 +563,10 @@ def access_level(client_id, session_id):
         response = c.access_level(access_level, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action(
+        "Changed access level of client ID %d, session ID %d to %s" %
+        (client_id, session_id, access_level), cmd="accessLevel"
+    )
     return api_response(response)
 
 @bp.route(
@@ -530,6 +585,12 @@ def hide_from_listing(client_id, session_id):
         response = c.hide_from_listing(hide, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    if hide:
+        msg = "hidden from listing"
+    else:
+        msg = "unhidden from listing"
+    log_user_action("Client ID %d, session ID %d %s" %
+        (client_id, session_id, msg), cmd="hideFromListing")
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/description", methods=["POST"])
@@ -545,6 +606,8 @@ def description(client_id, session_id):
         response = c.description(description, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Client ID %d, session ID %d description updated" %
+        (client_id, session_id), cmd="description")
     return api_response(response)
 
 @bp.route("/<int:client_id>/<int:session_id>/max_users", methods=["POST"])
@@ -555,11 +618,13 @@ def max_users(client_id, session_id):
         c = get_headless_client(client_id)
     except LookupError as exc:
         return api_response(exc)
-    max_users = request.form["max_users"]
+    max_users = int(request.form["max_users"])
     try:
         response = c.max_users(max_users, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action("Max users set to %d in client ID %d, session ID %d" %
+        (max_users, client_id, session_id), cmd="maxUsers")
     return api_response(response)
 
 @bp.route(
@@ -573,16 +638,22 @@ def away_kick_interval(client_id, session_id):
         c = get_headless_client(client_id)
     except LookupError as exc:
         return api_response(exc)
-    interval = request.form["interval"]
+    interval = int(request.form["interval"])
     try:
         response = c.away_kick_interval(interval, world=session_id)
     except (NeosError, HeadlessNotReady) as exc:
         return api_response(exc)
+    log_user_action(
+        "Away kick interval set to %d in client ID %d, session ID %d" %
+        (interval, client_id, session_id), cmd="awayKickInterval"
+    )
     return api_response(response)
 
 @bp.route("/<int:client_id>/shutdown")
 @api_login_required
 def shutdown(client_id):
+    log_user_action("Initiated shut down of headless client with ID %d" %
+        client_id, cmd="shutdown")
     try:
         exit_code = stop_headless_client(client_id)
     except LookupError as exc:

@@ -7,6 +7,8 @@ from authlib.integrations.base_client.errors import OAuthError
 
 bp = Blueprint("auth", __name__)
 
+log_action = lambda msg: current_app.logger.info(msg)
+
 def init_oauth(app):
     global oauth
     oauth = OAuth(app)
@@ -74,9 +76,11 @@ def authorize():
     user = oauth.concat.get("/api/users/current").json()
 
     if not user["id"] in current_app.config["AUTHORIZED_USERS"]:
+        log_action("(User: %s) Login denied" % user["username"])
         flash("Access denied")
         return redirect(url_for("index"))
 
+    log_action("(User: %s) Login approved" % user["username"])
     session_data = {"id": user["id"], "username": user["username"]}
     session["user"] = session_data
 
