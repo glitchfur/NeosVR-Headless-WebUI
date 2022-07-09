@@ -42,6 +42,15 @@ def init_db_command():
     init_db()
     click.echo("Initialized the database.")
 
+def _generate_pw(length=8):
+    """
+    Securely generate an alphanumeric password of the provided `length`.
+    Returns a `tuple` in the form `(password: str, hash: bytes)`.
+    """
+    pw_plain = "".join(secrets.choice(ALPHANUMERIC) for i in range(length))
+    pw_hashed = bcrypt.hashpw(pw_plain.encode("utf-8"), bcrypt.gensalt())
+    return (pw_plain, pw_hashed)
+
 user_cli = AppGroup("user", help="User management commands.")
 
 @user_cli.command("create")
@@ -51,17 +60,16 @@ def create_user_command(username):
     """Create a new user."""
     db = get_db()
 
-    pw_plain = "".join(secrets.choice(ALPHANUMERIC) for i in range(8))
-    pw_hashed = bcrypt.hashpw(pw_plain.encode("utf-8"), bcrypt.gensalt())
+    pw = _generate_pw()
 
     db.execute(
         "INSERT INTO users (username, password) VALUES (?, ?);",
-        (username, pw_hashed)
+        (username, pw[1])
     )
 
     db.commit()
 
-    click.echo("User %s created, password: %s" % (username, pw_plain))
+    click.echo("User %s created, password: %s" % (username, pw[0]))
 
 @user_cli.command("list")
 @with_appcontext
@@ -88,6 +96,24 @@ def delete_user_command(username):
     db.commit()
 
     click.echo("User %s deleted" % username)
+
+@user_cli.command("reset-password")
+@click.argument("username")
+@with_appcontext
+def reset_user_password_command(username):
+    """Reset a user's password."""
+    db = get_db()
+
+    new_pw = _generate_pw()
+
+    db.execute(
+        "UPDATE users SET password = ? WHERE username = ?",
+        (new_pw[1], username)
+    )
+
+    db.commit()
+
+    click.echo("User %s password reset: %s" % (username, new_pw[0]))
 
 def init_app(app):
     app.teardown_appcontext(close_db)
