@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-  <title>{{ config["APP_NAME"]}} Neos Dashboard</title>
+  <title>{{ config["APP_NAME"] }} Neos Dashboard</title>
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="/static/fonts/fontawesome/css/all.min.css">
@@ -90,7 +90,7 @@
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
           <b>Signed in as:</b>
-          <p>{{ session["user"]["username"] }} (<span class="font-monospace">#{{ session["user"]["id"] }}</span>)</p>
+          <p>{{ session["user"]["username"] }}</p>
           <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
         </div>
       </div>

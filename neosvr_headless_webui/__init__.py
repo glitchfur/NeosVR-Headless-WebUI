@@ -1,5 +1,4 @@
 from flask import Flask, redirect, render_template, session, url_for
-from .auth import login_required
 
 from os import path
 from base64 import b64encode
@@ -34,11 +33,13 @@ def create_app():
             return redirect(url_for("dashboard.dashboard"))
         return render_template("index.html")
 
+    from . import db
+    db.init_app(app)
+
     from . import dashboard
     app.register_blueprint(dashboard.bp)
 
     from . import auth
-    auth.init_oauth(app)
     app.register_blueprint(auth.bp)
 
     from . import api

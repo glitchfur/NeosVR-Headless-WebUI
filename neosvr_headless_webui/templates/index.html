@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>{{ config["APP_NAME"]}} Neos Dashboard</title>
+  <title>{{ config["APP_NAME"] }} Neos Dashboard</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Theme style -->
   <link rel="stylesheet" href="/static/css/adminlte.min.css">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/static/fonts/fontawesome/css/all.min.css">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 </head>
@@ -33,12 +35,29 @@
     <div class="card-body login-card-body">
       <p class="login-box-msg"><b>Welcome!</b> This is the {{ config["APP_NAME"]}} Neos dashboard used for controlling instances of the NeosVR headless client. To begin, click the button below to sign in.</p>
 
-      <div class="text-center">
-        <a href="/login" class="btn btn-block bg-gradient-primary btn-lg">
-          Sign in with {{ config["OAUTH_APP_NAME"] }}
-        </a>
-      </div>
-      <!-- /.social-auth-links -->
+      <form action="/login" method="post">
+        <div class="input-group mb-3">
+          <input type="text" name="username" class="form-control" placeholder="Username">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-user"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" name="password" class="form-control" placeholder="Password">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </div>
+        </div>
+      </form>
 
     </div>
     <!-- /.login-card-body -->

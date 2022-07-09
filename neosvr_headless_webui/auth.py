@@ -1,27 +1,13 @@
+import bcrypt
 from functools import wraps
 
-from flask import Blueprint, current_app, flash, redirect, session, url_for
+from flask import Blueprint, current_app, flash, redirect, request, session, url_for
 
-from authlib.integrations.flask_client import OAuth
-from authlib.integrations.base_client.errors import OAuthError
+from .db import get_db
 
 bp = Blueprint("auth", __name__)
 
 log_action = lambda msg: current_app.logger.info(msg)
-
-def init_oauth(app):
-    global oauth
-    oauth = OAuth(app)
-    oauth.register(
-        name="concat",
-        access_token_url=app.config["CONCAT_ACCESS_TOKEN_URL"],
-        authorize_url=app.config["CONCAT_AUTHORIZE_URL"],
-        api_base_url=app.config["CONCAT_API_BASE_URL"],
-        client_kwargs={
-            "scope": "pii:basic",
-            "token_endpoint_auth_method": "client_secret_post"
-        }
-    )
 
 def login_required(view):
     """
@@ -52,32 +38,28 @@ def api_login_required(view):
         return view(*args, **kwargs)
     return wrapped_view
 
-@bp.route("/login")
+@bp.route("/login", methods=["POST"])
 def login():
-    return oauth.concat.authorize_redirect(
-        url_for(".authorize", _external=True)
-    )
+    username = request.form["username"]
+    password = request.form["password"]
 
-@bp.route("/authorize")
-def authorize():
-    try:
-        # I don't know what the reasoning is for the Web/Flask OAuth client in
-        # Authlib sending the "state" parameter when getting the access token.
-        # The `requests` client does not do this. In any case, ConCat doesn't
-        # like to receive parameters it's not expecting, so it's removed here.
-        token = oauth.concat.authorize_access_token(state=None)
-    except OAuthError as e:
-        if e.error == "access_denied":
-            flash("Sorry, authorization is required.")
-        else:
-            flash("An unknown error occurred.")
+    db = get_db()
+
+    user = db.execute(
+        "SELECT * FROM users WHERE username = ?", (username,)
+    ).fetchone()
+
+    # If user doesn't exist, bail out early with a generic message.
+    if user == None:
+        log_action("(User: %s) Login denied, user does not exist")
+        flash("Login incorrect")
         return redirect(url_for("index"))
 
-    user = oauth.concat.get("/api/users/current").json()
+    success = bcrypt.checkpw(password.encode("utf-8"), user["password"])
 
-    if not user["id"] in current_app.config["AUTHORIZED_USERS"]:
-        log_action("(User: %s) Login denied" % user["username"])
-        flash("Access denied")
+    if not success:
+        log_action("(User: %s) Login denied, incorrect password" % user["username"])
+        flash("Login incorrect")
         return redirect(url_for("index"))
 
     log_action("(User: %s) Login approved" % user["username"])

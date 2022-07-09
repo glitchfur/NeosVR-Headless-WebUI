@@ -1,4 +1,3 @@
 Flask
-Authlib
-requests
+bcrypt
 rpyc
