@@ -107,7 +107,7 @@ def reset_user_password_command(username):
     new_pw = _generate_pw()
 
     db.execute(
-        "UPDATE users SET password = ? WHERE username = ?",
+        "UPDATE users SET password = ?, pw_chg_req = 1 WHERE username = ?",
         (new_pw[1], username)
     )
 
