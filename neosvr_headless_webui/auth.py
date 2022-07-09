@@ -13,12 +13,17 @@ def login_required(view):
     """
     Decorator that requires users to be logged in for a view.
     Redirects users to the login page with an error if they are not.
+    If they are logged in but a password change is required, they are directed
+    to do that instead.
     """
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if not "user" in session:
             flash("You must be logged in for that.")
             return redirect(url_for("index"))
+        if session["user"]["pw_chg_req"]:
+            flash("You must change your password before continuing.")
+            return redirect(url_for("account.password"))
         return view(*args, **kwargs)
     return wrapped_view
 
@@ -63,7 +68,11 @@ def login():
         return redirect(url_for("index"))
 
     log_action("(User: %s) Login approved" % user["username"])
-    session_data = {"id": user["id"], "username": user["username"]}
+    session_data = {
+        "id": user["id"],
+        "username": user["username"],
+        "pw_chg_req": bool(user["pw_chg_req"])
+    }
     session["user"] = session_data
 
     return redirect(url_for("index"))

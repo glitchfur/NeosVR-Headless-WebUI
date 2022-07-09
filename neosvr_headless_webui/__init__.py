@@ -39,6 +39,9 @@ def create_app():
     from . import dashboard
     app.register_blueprint(dashboard.bp)
 
+    from . import account
+    app.register_blueprint(account.bp)
+
     from . import auth
     app.register_blueprint(auth.bp)
 
