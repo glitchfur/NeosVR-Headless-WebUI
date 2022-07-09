@@ -4,6 +4,7 @@ from functools import wraps
 from flask import Blueprint, flash, redirect, render_template, request, url_for, session
 
 from .db import get_db
+from .auth import login_required
 
 bp = Blueprint("account", __name__, url_prefix="/account")
 
@@ -20,6 +21,11 @@ def user_required(view):
             return redirect(url_for("index"))
         return view(*args, **kwargs)
     return wrapped_view
+
+@bp.route("/")
+@login_required
+def account():
+    return render_template("account.html")
 
 @bp.route("/password")
 @user_required
