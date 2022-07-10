@@ -17,6 +17,15 @@ LOG_FILE = ""
 SECRET_KEY = ""
 # Location of the SQLite database for storing users.
 DB_NAME = "users.db"
+# Check password changes against Have I Been Pwned, a service that maintains a
+# list of breached passwords from known data leaks. While this setting is on, if
+# a user tries to set a password that has been "pwned" previously, the password
+# will be rejected and they will be prompted to choose a different password.
+# This does NOT send plaintext passwords to HIBP, only a small portion of the
+# password *hash* (the first five characters) is sent to perform the check, and
+# it is completely safe. Regardless, if you are okay with users potentially
+# using weak passwords, you can turn this setting off here.
+PASSWORD_SECURITY_CHECK = True
 # Host and port of the manager server. Defaults are provided.
 MANAGER_HOST, MANAGER_PORT = "127.0.0.1", 16882
 # Links to external sites which are displayed in the sidebar can be specified

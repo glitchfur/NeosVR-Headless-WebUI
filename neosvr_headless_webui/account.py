@@ -1,7 +1,9 @@
 import bcrypt
+import requests
 from functools import wraps
+from hashlib import sha1
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for, session
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for, session
 
 from .db import get_db
 from .auth import login_required
@@ -58,7 +60,24 @@ def password_change():
         flash("Old and new passwords can't be the same.")
         return redirect(url_for("account.password"))
 
-    # TODO: Password strength checking
+    # Check password hash against Have I Been Pwned breached password list
+    # https://haveibeenpwned.com/API/v3#PwnedPasswords
+
+    if current_app.config["PASSWORD_SECURITY_CHECK"]:
+        pw_sha1 = sha1(request.form["password1"].encode("utf-8")).hexdigest().upper()
+        req = requests.get(
+            "https://api.pwnedpasswords.com/range/%s" % pw_sha1[:5],
+            headers={"Add-Padding": "True"}
+        )
+        pws = req.text.split("\r\n")
+        for pw in pws:
+            h, c = pw.split(":")
+            if c == "0": # Skip padding
+                continue
+            if h == pw_sha1[5:]:
+                flash("This password has previously appeared in a data breach and "
+                    "is not secure. Please use a more secure password.")
+                return redirect(url_for("account.password"))
 
     pw_hashed = bcrypt.hashpw(request.form["password1"].encode("utf-8"), bcrypt.gensalt())
 
