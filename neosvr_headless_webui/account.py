@@ -59,6 +59,15 @@ def password_change():
     if request.form["password"] == request.form["password1"]:
         flash("Old and new passwords can't be the same.")
         return redirect(url_for("account.password"))
+    
+    pw_length = len(request.form["password1"])
+
+    if pw_length < 8:
+        flash("Passwords must be at least 8 characters.")
+        return redirect(url_for("account.password"))
+    if pw_length > 256:
+        flash("Password character limit is 256.")
+        return redirect(url_for("account.password"))
 
     # Check password hash against Have I Been Pwned breached password list
     # https://haveibeenpwned.com/API/v3#PwnedPasswords
