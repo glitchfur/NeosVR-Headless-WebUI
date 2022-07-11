@@ -286,7 +286,18 @@ class HeadlessClientService(Service):
 
         At the moment, only remote headless clients are supported.
         """
-        client = HeadlessClientInstance(name, host, port, *args, **kwargs)
+        for i in range(1, 61):
+            try:
+                logging.info("Trying connection to %s (%d/60) ..." % (host, i))
+                client = HeadlessClientInstance(
+                    name, host, port, *args, **kwargs
+                )
+                break
+            except ConnectionRefusedError:
+                sleep(5)
+        else:
+            raise ConnectionRefusedError
+
         self.current_id += 1
         self.clients[self.current_id] = client
         logging.info("Starting headless client with ID: %d" % self.current_id)
