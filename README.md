@@ -1,31 +1,23 @@
 # NeosVR-Headless-WebUI
 
-**NeoVR-Headless-WebUI** is a [Flask](https://palletsprojects.com/p/flask/) application that provides a web interface for managing one or several instances of the [NeosVR](https://neos.com/) [headless client](https://wiki.neos.com/Headless_Client/Server).
+**NeosVR-Headless-WebUI** is a web dashboard that allows you to monitor and control one or several NeosVR [headless clients](https://wiki.neos.com/Headless_Client) simultaneously. The backend is powered by [Flask](https://flask.palletsprojects.com/) and uses [rpyc](https://rpyc.readthedocs.io/) to communicate with headless clients remotely using [NeosVR-Headless-API](https://github.com/glitchfur/NeosVR-Headless-API).
 
-_This project is in very early development stages and is not currently a functioning app._ It's also semi-tailored to fit [BLFC](https://goblfc.org/)'s needs, as they are the initial users of this app, but the code may be generalized in the future to allow others to use it as well.
+![Screenshot showing the web interface, featuring several headless clients in different states.](screenshot.png)
 
-This app depends on [NeosVR-Headless-API](https://gitlab.com/glitchfur/neosvr-headless-api) for interacting with the headless client.
+## Features
 
-This project is not officially affiliated with Neos or the Neos development team in any way.
+- Monitor total number of headless clients, sessions, and users
+- Attractive administrative interface allowing you to perform most headless client actions
+- Search for users across all headless client sessions
+- Frozen headless client detection - allows you to kill stuck headless clients or restart them in place
+- Multi user login and access
+- Run and control headless clients on remote machines
 
-## Configuring the app
 
-First, make sure you have an `instance` folder created. Next, copy `config_example.py` to `instance/config.py` and edit it as needed.
+## Installation
 
-## Running the headless client manager
+You can get started quickly by running the web app as a Docker container (easier) or by manually setting everything up yourself (more difficult and currently undocumented). See the [wiki](https://github.com/glitchfur/NeosVR-Headless-WebUI/wiki) for installation and configuration steps. The Docker image can be used to control headless clients that are _not_ containerized as well.
 
-The headless client manager is the server that facilitates all communications between the web application and headless clients. Preferably it should be run on the same machine as the web application, and it should be started before the web application. It can be started simply with `./manager_server.py`.
+## License
 
-The process stays in the foreground so it is advised to run it inside a `screen` or `tmux` session.
-
-## Running the development server
-
-The development server should only be used to test code changes and is not designed to be run in production. After installing the dependencies in `requirements.txt`, you can run the app with:
-
-```
-export FLASK_APP=neosvr_headless_webui
-export FLASK_ENV=development
-flask run
-```
-
-Alternatively, assuming you have a virtualenv set up in `venv`, run `./start_development_server.sh`.
+This project uses the [GNU GPLv3](/LICENSE.txt) license.
