@@ -25,6 +25,7 @@ bp = Blueprint("auth", __name__)
 
 log_action = lambda msg: current_app.logger.info(msg)
 
+
 def login_required(view):
     """
     Decorator that requires users to be logged in for a view.
@@ -32,6 +33,7 @@ def login_required(view):
     If they are logged in but a password change is required, they are directed
     to do that instead.
     """
+
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if not "user" in session:
@@ -41,23 +43,25 @@ def login_required(view):
             flash("You must change your password before continuing.")
             return redirect(url_for("account.password"))
         return view(*args, **kwargs)
+
     return wrapped_view
+
 
 def api_login_required(view):
     """
     Decorator that requires users to be logged in to use an API method.
     Unauthenticated users get a HTTP 401 error and a JSON response.
     """
+
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if not "user" in session:
-            response = {
-                "success": False,
-                "message": "You must be logged in for that."
-            }
+            response = {"success": False, "message": "You must be logged in for that."}
             return response, 401
         return view(*args, **kwargs)
+
     return wrapped_view
+
 
 @bp.route("/login", methods=["POST"])
 def login():
@@ -66,9 +70,7 @@ def login():
 
     db = get_db()
 
-    user = db.execute(
-        "SELECT * FROM users WHERE username = ?", (username,)
-    ).fetchone()
+    user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
 
     # If user doesn't exist, bail out early with a generic message.
     if user == None:
@@ -87,11 +89,12 @@ def login():
     session_data = {
         "id": user["id"],
         "username": user["username"],
-        "pw_chg_req": bool(user["pw_chg_req"])
+        "pw_chg_req": bool(user["pw_chg_req"]),
     }
     session["user"] = session_data
 
     return redirect(url_for("index"))
+
 
 @bp.route("/logout")
 def logout():

@@ -24,12 +24,15 @@ bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 # Maximum time to wait for RPC responses (in seconds)
 SYNC_REQUEST_TIMEOUT = 60
 
+
 def connect_manager():
     """Returns an RPC connection to the manager server."""
     return connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"],
-        config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT}
+        current_app.config["MANAGER_HOST"],
+        current_app.config["MANAGER_PORT"],
+        config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT},
     )
+
 
 @bp.route("")
 @login_required

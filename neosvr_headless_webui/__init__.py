@@ -21,6 +21,7 @@ from base64 import b64encode
 
 import logging
 
+
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile("config.py")
@@ -31,7 +32,7 @@ def create_app():
         hdlr = logging.FileHandler(app.config["LOG_FILE"])
         fmt = logging.Formatter(
             fmt="[%(asctime)s] [%(name)s] %(levelname)s: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
         hdlr.setFormatter(fmt)
         hdlr.addFilter(logging.Filter("neosvr_headless_webui"))
@@ -50,21 +51,27 @@ def create_app():
         return render_template("index.html")
 
     from . import db
+
     db.init_app(app)
 
     from . import dashboard
+
     app.register_blueprint(dashboard.bp)
 
     from . import account
+
     app.register_blueprint(account.bp)
 
     from . import auth
+
     app.register_blueprint(auth.bp)
 
     from . import api
+
     app.register_blueprint(api.bp)
 
     from . import client
+
     app.register_blueprint(client.bp)
 
     return app

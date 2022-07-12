@@ -24,12 +24,15 @@ bp = Blueprint("client", __name__, url_prefix="/client")
 # Maximum time to wait for RPC responses (in seconds)
 SYNC_REQUEST_TIMEOUT = 60
 
+
 def connect_manager():
     """Returns an RPC connection to the manager server."""
     return connect(
-        current_app.config["MANAGER_HOST"], current_app.config["MANAGER_PORT"],
-        config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT}
+        current_app.config["MANAGER_HOST"],
+        current_app.config["MANAGER_PORT"],
+        config={"sync_request_timeout": SYNC_REQUEST_TIMEOUT},
     )
+
 
 def list_headless_clients():
     """Lists headless clients that are currently running and ready."""
@@ -45,6 +48,7 @@ def list_headless_clients():
         ready_clients[c] = clients[c]
     return ready_clients
 
+
 @bp.route("/<int:client_id>")
 @login_required
 def get_client(client_id):
@@ -52,7 +56,7 @@ def get_client(client_id):
     try:
         client = conn.root.get_headless_client(client_id)
     except LookupError:
-        return ("This client does not exist.", 404) # TODO: Pretty 404
+        return ("This client does not exist.", 404)  # TODO: Pretty 404
     if not client.is_ready():
         return ("The client is not ready yet. Try again soon.", 404)
 
@@ -69,6 +73,7 @@ def get_client(client_id):
 
     return render_template("client.html")
 
+
 @bp.route("/<int:client_id>/session/<int:world_number>")
 @login_required
 def get_session(client_id, world_number):
@@ -76,7 +81,7 @@ def get_session(client_id, world_number):
     try:
         client = conn.root.get_headless_client(client_id)
     except LookupError:
-        return ("This client does not exist.", 404) # TODO: Pretty 404
+        return ("This client does not exist.", 404)  # TODO: Pretty 404
     if not client.is_ready():
         return ("The client is not ready yet. Try again soon.", 404)
 

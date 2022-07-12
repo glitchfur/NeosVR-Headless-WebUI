@@ -29,16 +29,14 @@ from json import load
 from time import time, sleep
 
 from rpyc import Service
-from neosvr_headless_api import (
-    RemoteHeadlessClient, NeosError, HeadlessNotReady
-)
+from neosvr_headless_api import RemoteHeadlessClient, NeosError, HeadlessNotReady
 
 logging.basicConfig(
-    format="[%(asctime)s][%(levelname)s] %(message)s",
-    level=logging.INFO
+    format="[%(asctime)s][%(levelname)s] %(message)s", level=logging.INFO
 )
 
 NOT_READY_MESSAGE = "The headless client is not ready yet. Try again soon."
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -47,18 +45,16 @@ def main():
     parser.add_argument(
         "--host",
         default="127.0.0.1",
-        help="The host or IP address to bind to. (Default: 127.0.0.1)"
+        help="The host or IP address to bind to. (Default: 127.0.0.1)",
     )
     parser.add_argument(
-        "-p", "--port",
+        "-p",
+        "--port",
         type=int,
         default=16882,
-        help="The TCP port to bind to. (Default: 16882)"
+        help="The TCP port to bind to. (Default: 16882)",
     )
-    parser.add_argument(
-        "-a", "--autostart",
-        help="Path to autostart JSON file."
-    )
+    parser.add_argument("-a", "--autostart", help="Path to autostart JSON file.")
     args = parser.parse_args()
 
     if args.autostart:
@@ -68,6 +64,7 @@ def main():
         autostart = None
 
     from rpyc.utils.server import ThreadedServer
+
     server = ThreadedServer(
         HeadlessClientService(autostart=autostart),
         hostname=args.host,
@@ -77,10 +74,11 @@ def main():
             "allow_public_attrs": True,
             # I'm not sure if this is needed or not, nor do I know what it does,
             # but it's in the example documentation so it's going here.
-            "import_custom_exceptions": True
-        }
+            "import_custom_exceptions": True,
+        },
     )
     server.start()
+
 
 class HeadlessClientInstance(RemoteHeadlessClient):
     """
@@ -121,12 +119,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         # The keys of the "status" and "users" dicts will be world numbers, or
         # sessions. The values of these will again be dicts of that world's
         # respective status and list of users.
-        self._info = {
-            "status": {},
-            "users": {},
-            "session_id": {},
-            "session_url": {}
-        }
+        self._info = {"status": {}, "users": {}, "session_id": {}, "session_url": {}}
         self._polling_thread = Thread(target=self._polling_thread)
         self._polling_thread.start()
 
@@ -135,7 +128,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         # that it doesn't block indefinitely and allows for a chance to abort in
         # case the headless client never fully starts.
         while self.running:
-            ready = self.wait_for_ready(timeout=.5)
+            ready = self.wait_for_ready(timeout=0.5)
             if ready:
                 break
         while self.running:
@@ -149,8 +142,8 @@ class HeadlessClientInstance(RemoteHeadlessClient):
             for d in ("status", "users", "session_id", "session_url"):
                 remove = set(self._info[d]).difference(world_indexes)
                 for i in remove:
-                    del(self._info[d][i])
-            sleep(.5)
+                    del self._info[d][i]
+            sleep(0.5)
             # "status" and "users" have the scope of a single session and so
             # need to be run per session.
             for i in world_indexes:
@@ -160,14 +153,13 @@ class HeadlessClientInstance(RemoteHeadlessClient):
                     # Session IDs don't change, no need to update over and over.
                     if not i in self._info["session_id"]:
                         self._info["session_id"][i] = status["session_id"]
-                    sleep(.5)
+                    sleep(0.5)
                     self._info["users"][i] = super().users(world=i)
-                    sleep(.5)
+                    sleep(0.5)
                     # Same comment as above, but for session URLs.
                     if not i in self._info["session_url"]:
-                        self._info["session_url"][i] = \
-                            super().session_url(world=i)
-                        sleep(.5)
+                        self._info["session_url"][i] = super().session_url(world=i)
+                        sleep(0.5)
                 except NeosError:
                     # If we got here, a world was closed after we called
                     # `worlds()`. Don't bother running the rest of the loop
@@ -252,12 +244,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         """
         # TODO: Maybe check if the client is ready here instead of relying
         # on the `worlds()` call to fail. It doesn't affect anything though ...
-        status = {
-            "sessions": 0,
-            "current_users": 0,
-            "present_users": 0,
-            "max_users": 0
-        }
+        status = {"sessions": 0, "current_users": 0, "present_users": 0, "max_users": 0}
         worlds = self.worlds()
         status["sessions"] += len(worlds)
         for w in worlds:
@@ -272,6 +259,7 @@ class HeadlessClientInstance(RemoteHeadlessClient):
         self._polling_thread.join()
         super().shutdown()
 
+
 class HeadlessClientService(Service):
     def __init__(self, autostart=None):
         super().__init__()
@@ -281,7 +269,8 @@ class HeadlessClientService(Service):
         def autostart_thread():
             for c in autostart:
                 client = self.exposed_start_headless_client(
-                    c["name"], c["host"], c["port"], c["neos_dir"], c["config"])
+                    c["name"], c["host"], c["port"], c["neos_dir"], c["config"]
+                )
                 # Start each headless client immediately after the previous one
                 # is ready, or wait up to 30 seconds. Whichever comes first.
                 client[1].wait_for_ready(timeout=30)
@@ -304,9 +293,7 @@ class HeadlessClientService(Service):
         for i in range(1, 61):
             try:
                 logging.info("Trying connection to %s (%d/60) ..." % (host, i))
-                client = HeadlessClientInstance(
-                    name, host, port, *args, **kwargs
-                )
+                client = HeadlessClientInstance(name, host, port, *args, **kwargs)
                 break
             except ConnectionRefusedError:
                 sleep(5)
@@ -331,10 +318,10 @@ class HeadlessClientService(Service):
         client = self.clients[cid]
         client.shutdown()
         exit_code = client.process.wait()
-        del(self.clients[cid])
+        del self.clients[cid]
         logging.info(
-            "Headless client with ID %d terminated with return code %d." %
-            (cid, exit_code)
+            "Headless client with ID %d terminated with return code %d."
+            % (cid, exit_code)
         )
         logging.info("Total clients running: %d" % len(self.clients))
         return exit_code
@@ -365,10 +352,10 @@ class HeadlessClientService(Service):
         exit_code = func()
         # TODO: The following code is identical to that of
         # `exposed_stop_headless_client()`
-        del(self.clients[cid])
+        del self.clients[cid]
         logging.info(
-            "Headless client with ID %d terminated with return code %d." %
-            (cid, exit_code)
+            "Headless client with ID %d terminated with return code %d."
+            % (cid, exit_code)
         )
         logging.info("Total clients running: %d" % len(self.clients))
         return exit_code
@@ -394,7 +381,7 @@ class HeadlessClientService(Service):
             "sessions": 0,
             "current_users": 0,
             "present_users": 0,
-            "max_users": 0
+            "max_users": 0,
         }
         for c in self.clients:
             # Skip clients that are still starting up.
@@ -466,11 +453,15 @@ class HeadlessClientService(Service):
             if not self.clients[cid].is_ready():
                 continue
             for sid, w in enumerate(self.clients[cid].worlds()):
-                asyncs.append((cid, sid, self.clients[cid].async_(
-                    self.clients[cid].kick,
-                    username,
-                    world=sid
-                )))
+                asyncs.append(
+                    (
+                        cid,
+                        sid,
+                        self.clients[cid].async_(
+                            self.clients[cid].kick, username, world=sid
+                        ),
+                    )
+                )
         for k in asyncs:
             # TODO: Better exception handling?
             if k[2].exception() == None:
@@ -509,16 +500,20 @@ class HeadlessClientService(Service):
             # Skip clients that are still starting up.
             if not self.clients[cid].is_ready():
                 continue
-            async_bans.append((cid, self.clients[cid].async_(
-                    self.clients[cid].ban_by_name, username
-                )))
+            async_bans.append(
+                (cid, self.clients[cid].async_(self.clients[cid].ban_by_name, username))
+            )
             if kick:
                 for sid, w in enumerate(self.clients[cid].worlds()):
-                    async_kicks.append((cid, sid, self.clients[cid].async_(
-                        self.clients[cid].kick,
-                        username,
-                        world=sid
-                    )))
+                    async_kicks.append(
+                        (
+                            cid,
+                            sid,
+                            self.clients[cid].async_(
+                                self.clients[cid].kick, username, world=sid
+                            ),
+                        )
+                    )
         for b in async_bans:
             # TODO: Better exception handling?
             if b[1].exception() == None:
@@ -528,6 +523,7 @@ class HeadlessClientService(Service):
             if k[2].exception() == None:
                 kicks.append((k[0], k[1]))
         return {"bans": bans, "kicks": kicks}
+
 
 if __name__ == "__main__":
     main()
