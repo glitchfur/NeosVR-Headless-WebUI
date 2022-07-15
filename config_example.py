@@ -14,7 +14,7 @@ LOG_FILE = ""
 # Secret key used for encrypting session cookies.
 # A secure random key can be generated like this:
 # python -c 'import os; print(os.urandom(16))'
-SECRET_KEY = ""
+SECRET_KEY = b""
 # Location of the SQLite database for storing users.
 DB_NAME = "users.db"
 # Check password changes against Have I Been Pwned, a service that maintains a
