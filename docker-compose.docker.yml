@@ -1,0 +1,35 @@
+version: "3"
+services:
+  neosvr_headless_webui:
+    image: ghcr.io/glitchfur/neosvr-headless-webui
+    container_name: neosvr-headless-webui
+    ports:
+      - 8000:8000
+    volumes:
+      - ./instance:/home/webui/instance
+  manager_server:
+    image: ghcr.io/glitchfur/neosvr-headless-webui
+    container_name: manager-server
+    volumes:
+      - ./autostart.json:/home/webui/autostart.json
+    stop_signal: SIGINT
+    command: ["./manager_server.py", "--host", "0.0.0.0", "-a", "autostart.json"]
+  neosvr-headless-api:
+    image: ghcr.io/glitchfur/neosvr-headless-api
+    container_name: neosvr-headless-api
+    tty: true
+    stdin_open: true
+    environment:
+      STEAMBETA: CHANGEME
+      STEAMBETAPASSWORD: CHANGEME
+      STEAMLOGIN: "USER PASSWORD"
+    volumes:
+      - "./Config:/Config:ro"
+      - "./Logs:/Logs"
+      - "/etc/localtime:/etc/localtime:ro"
+    command: ["--host", "0.0.0.0"]
+    # If you are having issues starting the headless client, comment out the line
+    # above and uncomment the two lines below to start the headless client with
+    # no RPC server, so you'll be able to see the console and catch errors.
+    # entrypoint: ["/Scripts/setup_neosvr.sh"]
+    # command: ["/Scripts/start_neosvr.sh"]

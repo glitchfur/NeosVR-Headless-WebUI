@@ -1,0 +1,16 @@
+version: "3"
+services:
+  neosvr_headless_webui:
+    image: ghcr.io/glitchfur/neosvr-headless-webui
+    container_name: neosvr-headless-webui
+    ports:
+      - 8000:8000
+    volumes:
+      - ./instance:/home/webui/instance
+  manager_server:
+    image: ghcr.io/glitchfur/neosvr-headless-webui
+    container_name: manager-server
+    volumes:
+      - ./autostart.json:/home/webui/autostart.json
+    stop_signal: SIGINT
+    command: ["./manager_server.py", "--host", "0.0.0.0", "-a", "autostart.json"]
