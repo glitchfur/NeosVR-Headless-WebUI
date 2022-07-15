@@ -4,6 +4,8 @@
 
 ![Screenshot showing the web interface, featuring several headless clients in different states.](screenshot.png)
 
+[Click here to see more screenshots.](screenshots.md)
+
 ## Features
 
 - Monitor total number of headless clients, sessions, and users
