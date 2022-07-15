@@ -2,7 +2,7 @@
 
 **NeosVR-Headless-WebUI** is a web dashboard that allows you to monitor and control one or several NeosVR [headless clients](https://wiki.neos.com/Headless_Client) simultaneously. The backend is powered by [Flask](https://flask.palletsprojects.com/) and uses [rpyc](https://rpyc.readthedocs.io/) to communicate with headless clients remotely using [NeosVR-Headless-API](https://github.com/glitchfur/NeosVR-Headless-API).
 
-![Screenshot showing the web interface, featuring several headless clients in different states.](screenshot.png)
+![Screenshot showing the web interface, featuring several headless clients in different states.](screenshot0.png)
 
 [Click here to see more screenshots.](screenshots.md)
 
