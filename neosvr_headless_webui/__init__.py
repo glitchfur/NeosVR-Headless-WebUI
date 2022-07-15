@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import click
 from flask import Flask, redirect, render_template, session, url_for
 
-from os import path
+from os import path, urandom
 from base64 import b64encode
 
 import logging
@@ -50,6 +51,11 @@ def create_app():
             return redirect(url_for("dashboard.dashboard"))
         return render_template("index.html")
 
+    @click.command("gen-secret-key")
+    def gen_secret_key_command():
+        """Generate a secret key for encrypting session cookies."""
+        click.echo(str(repr(urandom(16))))
+
     from . import db
 
     db.init_app(app)
@@ -73,5 +79,7 @@ def create_app():
     from . import client
 
     app.register_blueprint(client.bp)
+
+    app.cli.add_command(gen_secret_key_command)
 
     return app
