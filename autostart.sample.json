@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Headless Client (Steam + Mono)",
+    "host": "172.17.0.1",
+    "port": 16881,
+    "neos_dir": "/home/username/.steam/steamapps/common/NeosVR",
+    "config": "/home/username/.steam/steamapps/common/NeosVR/Config/Config.json"
+  },
+  {
+    "name": "Headless Client (Docker)",
+    "host": "neosvr-headless-api",
+    "port": 16881,
+    "neos_dir": "/home/steam/neosvr-headless",
+    "config": "/Config/Config.json"
+  }
+]
