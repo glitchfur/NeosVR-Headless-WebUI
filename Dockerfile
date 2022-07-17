@@ -1,7 +1,5 @@
 FROM python:3.9-alpine
 
-RUN ["apk", "add", "git"]
-
 RUN ["adduser", "-D", "webui"]
 USER webui:webui
 WORKDIR /home/webui
@@ -14,12 +12,13 @@ RUN ["pip", "install", "gunicorn"]
 # Install requirements for web dashboard
 RUN ["pip", "install", "-r", "requirements.txt"]
 
-RUN ["git", "clone", "https://github.com/glitchfur/NeosVR-Headless-API"]
+RUN ["wget", "https://github.com/glitchfur/NeosVR-Headless-API/archive/refs/heads/master.tar.gz"]
+RUN ["tar", "xzf", "master.tar.gz"]
 # Install requirements for API
-RUN ["pip", "install", "-r", "NeosVR-Headless-API/requirements.txt"]
+RUN ["pip", "install", "-r", "NeosVR-Headless-API-master/requirements.txt"]
 # Move module into proper directory, and remove the rest.
-RUN ["mv", "NeosVR-Headless-API/neosvr_headless_api", "."]
-RUN ["rm", "-rf", "NeosVR-Headless-API"]
+RUN ["mv", "NeosVR-Headless-API-master/neosvr_headless_api", "."]
+RUN ["rm", "-rf", "NeosVR-Headless-API-master", "master.tar.gz"]
 
 ENV FLASK_APP=neosvr_headless_webui
 
