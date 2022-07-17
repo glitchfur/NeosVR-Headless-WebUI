@@ -8,16 +8,19 @@ RUN ["pip", "install", "gunicorn"]
 
 WORKDIR /home/webui
 
+# NeosVR-Headless-WebUI
 COPY requirements.txt .
-# Install requirements for web dashboard
+# Install requirements for WebUI
 RUN ["pip", "install", "-r", "requirements.txt"]
 
+# NeosVR-Headless-API
 RUN ["wget", "https://github.com/glitchfur/NeosVR-Headless-API/archive/refs/heads/master.tar.gz"]
 RUN ["tar", "xzf", "master.tar.gz"]
 # Install requirements for API
 RUN ["pip", "install", "-r", "NeosVR-Headless-API-master/requirements.txt"]
 # Move module into proper directory
 RUN ["mv", "NeosVR-Headless-API-master/neosvr_headless_api", "."]
+
 # Clean up
 RUN ["rm", "-r", "NeosVR-Headless-API-master", "master.tar.gz", "requirements.txt"]
 
