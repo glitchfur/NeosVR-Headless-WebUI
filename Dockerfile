@@ -1,5 +1,7 @@
 FROM python:3.9-alpine
 
+ENV PIP_NO_CACHE_DIR=true
+
 RUN ["adduser", "-D", "webui"]
 RUN ["pip", "install", "gunicorn"]
 
