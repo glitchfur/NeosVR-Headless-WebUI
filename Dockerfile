@@ -15,7 +15,8 @@ RUN ["tar", "xzf", "master.tar.gz"]
 RUN ["pip", "install", "-r", "NeosVR-Headless-API-master/requirements.txt"]
 # Move module into proper directory, and remove the rest.
 RUN ["mv", "NeosVR-Headless-API-master/neosvr_headless_api", "."]
-RUN ["rm", "-rf", "NeosVR-Headless-API-master", "master.tar.gz"]
+# Clean up
+RUN ["rm", "-r", "NeosVR-Headless-API-master", "master.tar.gz", "requirements.txt"]
 
 USER webui:webui
 
