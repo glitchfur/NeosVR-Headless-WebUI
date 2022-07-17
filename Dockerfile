@@ -1,13 +1,10 @@
 FROM python:3.9-alpine
 
 RUN ["adduser", "-D", "webui"]
-USER webui:webui
-WORKDIR /home/webui
-ENV PATH=$PATH:/home/webui/.local/bin
-
-COPY --chown=webui:webui . .
-
 RUN ["pip", "install", "gunicorn"]
+
+WORKDIR /home/webui
+COPY . .
 
 # Install requirements for web dashboard
 RUN ["pip", "install", "-r", "requirements.txt"]
@@ -19,6 +16,8 @@ RUN ["pip", "install", "-r", "NeosVR-Headless-API-master/requirements.txt"]
 # Move module into proper directory, and remove the rest.
 RUN ["mv", "NeosVR-Headless-API-master/neosvr_headless_api", "."]
 RUN ["rm", "-rf", "NeosVR-Headless-API-master", "master.tar.gz"]
+
+USER webui:webui
 
 ENV FLASK_APP=neosvr_headless_webui
 
