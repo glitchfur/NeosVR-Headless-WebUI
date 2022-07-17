@@ -4,8 +4,8 @@ RUN ["adduser", "-D", "webui"]
 RUN ["pip", "install", "gunicorn"]
 
 WORKDIR /home/webui
-COPY . .
 
+COPY requirements.txt .
 # Install requirements for web dashboard
 RUN ["pip", "install", "-r", "requirements.txt"]
 
@@ -17,6 +17,8 @@ RUN ["pip", "install", "-r", "NeosVR-Headless-API-master/requirements.txt"]
 RUN ["mv", "NeosVR-Headless-API-master/neosvr_headless_api", "."]
 # Clean up
 RUN ["rm", "-r", "NeosVR-Headless-API-master", "master.tar.gz", "requirements.txt"]
+
+COPY . .
 
 USER webui:webui
 
