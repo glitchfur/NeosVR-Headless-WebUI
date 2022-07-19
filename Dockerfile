@@ -14,15 +14,15 @@ COPY requirements.txt .
 RUN ["pip", "install", "-r", "requirements.txt"]
 
 # NeosVR-Headless-API
-RUN ["wget", "https://github.com/glitchfur/NeosVR-Headless-API/archive/refs/heads/master.tar.gz"]
-RUN ["tar", "xzf", "master.tar.gz"]
+RUN ["wget", "https://github.com/glitchfur/NeosVR-Headless-API/archive/refs/tags/v0.1.1-alpha.tar.gz"]
+RUN ["tar", "xzf", "v0.1.1-alpha.tar.gz"]
 # Install requirements for API
-RUN ["pip", "install", "-r", "NeosVR-Headless-API-master/requirements.txt"]
+RUN ["pip", "install", "-r", "NeosVR-Headless-API-0.1.1-alpha/requirements.txt"]
 # Move module into proper directory
-RUN ["mv", "NeosVR-Headless-API-master/neosvr_headless_api", "."]
+RUN ["mv", "NeosVR-Headless-API-0.1.1-alpha/neosvr_headless_api", "."]
 
 # Clean up
-RUN ["rm", "-r", "NeosVR-Headless-API-master", "master.tar.gz", "requirements.txt"]
+RUN ["rm", "-r", "NeosVR-Headless-API-0.1.1-alpha", "v0.1.1-alpha.tar.gz", "requirements.txt"]
 
 COPY . .
 
