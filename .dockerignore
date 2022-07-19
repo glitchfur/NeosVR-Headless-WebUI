@@ -2,3 +2,4 @@
 !neosvr_headless_webui/
 !manager_server.py
 !requirements.txt
+**/__pycache__/
