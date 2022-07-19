@@ -21,10 +21,10 @@ RUN ["pip", "install", "-r", "NeosVR-Headless-API-0.1.1-alpha/requirements.txt"]
 # Move module into proper directory
 RUN ["mv", "NeosVR-Headless-API-0.1.1-alpha/neosvr_headless_api", "."]
 
+COPY . .
+
 # Clean up
 RUN ["rm", "-r", "NeosVR-Headless-API-0.1.1-alpha", "v0.1.1-alpha.tar.gz", "requirements.txt"]
-
-COPY . .
 
 USER webui:webui
 
