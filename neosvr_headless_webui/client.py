@@ -70,6 +70,7 @@ def get_client(client_id):
     g.compatibility_hash = client.compatibility_hash
     g.machine_id = client.machine_id
     g.supported_network_protocols = client.supported_network_protocols
+    g.friend_requests = client.friend_requests()
 
     return render_template("client.html")
 
