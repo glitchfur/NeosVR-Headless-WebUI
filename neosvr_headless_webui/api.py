@@ -290,9 +290,37 @@ def invite(client_id, session_id):
     )
     return api_response(response)
 
+@bp.route("/<int:client_id>/friend_requests")
+@api_login_required
+def friend_requests(client_id):
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    try:
+        response = c.friend_requests()
+    except HeadlessNotReady as exc:
+        return api_response(exc)
+    return convert_netref(response)
 
-# TODO: Implement `friend_requests` here
-# TODO: Implement `accept_friend_request` here
+@bp.route("/<int:client_id>/accept_friend_request", methods=["POST"])
+@api_login_required
+def accept_friend_request(client_id):
+    try:
+        c = get_headless_client(client_id)
+    except LookupError as exc:
+        return api_response(exc)
+    user = request.form["username"]
+    try:
+        response = c.accept_friend_request(user)
+    except HeadlessNotReady as exc:
+        return api_response(exc)
+    log_user_action(
+        'Accepted contact request of "%s" from client ID %d'
+        % (user, client_id),
+        cmd="acceptFriendRequest",
+    )
+    return api_response(response)
 
 
 @bp.route("/<int:client_id>/worlds")

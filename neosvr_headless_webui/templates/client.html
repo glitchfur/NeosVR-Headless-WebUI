@@ -89,6 +89,22 @@
 
       </div>
 
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Client info</h3>
+            </div>
+            <div class="card-body">
+              <b>Version:</b> {{ g.version }}<br />
+              <b>Compatibility Hash:</b> <code>{{ g.compatibility_hash }}</code><br />
+              <b>Machine ID: </b> <code>{{ g.machine_id }}</code><br />
+              <b>Supported Network Protocols: </b> {{ ", ".join(g.supported_network_protocols) }}<br />
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="col-xl-6">
@@ -127,15 +143,37 @@
             </div>
           </div>
 
+        </div>
+
+      </div>
+
+      <div class="row">
+        <div class="col-xl-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Client info</h3>
+              <h3 class="card-title" style="position: relative; top: 5px;">Contact requests</h3>
             </div>
-            <div class="card-body">
-              <b>Version:</b> {{ g.version }}<br />
-              <b>Compatibility Hash:</b> <code>{{ g.compatibility_hash }}</code><br />
-              <b>Machine ID: </b> <code>{{ g.machine_id }}</code><br />
-              <b>Supported Network Protocols: </b> {{ ", ".join(g.supported_network_protocols) }}<br />
+            <div class="card-body p-0">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for friend_request in g.friend_requests %}
+                  <tr>
+                    <td>{{ friend_request }}</td>
+                    <td>
+                      {% if g.state[0] == "running" %}
+                      <button class="btn btn-success btn-xs" data-toggle="modal" data-target="#acceptFriendRequestModal" data-username="{{ friend_request }}"><b>Accept</b></button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -198,6 +236,30 @@
     </div>
   </div>
 {% endif %}
+
+<!-- AcceptFriendRequest modal -->
+<div class="modal fade" id="acceptFriendRequestModal" tabindex="-1" role="dialog" aria-labelledby="acceptFriendRequestModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="acceptFriendRequestModalLabel">Contact request</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="acceptFriendRequestModalForm" action="/api/v1/{{ g.client_id }}/accept_friend_request" method="post">
+        <div class="modal-body">
+          Are you sure you want to accept the contact request of <b id="acceptFriendRequestModalUsernameDisplay"></b>?
+          <input type="hidden" id="acceptFriendRequestModalUsername" name="username" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Accept</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 
